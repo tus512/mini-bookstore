@@ -1,0 +1,26 @@
+name: mini-store
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+
+    ports:
+      - "8080:8080"
+
+    volumes:
+      # Mount local source code into container
+      - ./backend:/app
+
+      # Prevent overwriting container gradle cache
+      - gradle-cache:/root/.gradle
+
+    environment:
+      SPRING_DEVTOOLS_RESTART_ENABLED: "true"
+
+    stdin_open: true
+    tty: true
+
+volumes:
+  gradle-cache:
