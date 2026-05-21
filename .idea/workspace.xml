@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="e35169ef-5c4a-4920-8441-88816a2ed1da" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/mini-store.iml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/.gitattributes" beforeDir="false" afterPath="$PROJECT_DIR$/backend/.gitattributes" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/backend/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/build.gradle" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/gradle/wrapper/gradle-wrapper.jar" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/gradle/wrapper/gradle-wrapper.properties" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/gradlew" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/gradlew.bat" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/settings.gradle" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/mini_store/MiniStoreApplication.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/mini_store/MiniStoreController.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/resources/application.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/src/test/java/com/example/mini_store/MiniStoreApplicationTests.java" beforeDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="CompilerWorkspaceConfiguration">
+    <option name="MAKE_PROJECT_ON_SAVE" value="true" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="MavenImportPreferences">
+    <option name="generalSettings">
+      <MavenGeneralSettings>
+        <option name="mavenHomeTypeForPersistence" value="WRAPPER" />
+      </MavenGeneralSettings>
+    </option>
+  </component>
+  <component name="NextEditCompletionFeaturesState">
+    <decayedCancelled>
+      <entry key="MS100" value="1.4118785928190363" />
+      <entry key="MS500" value="2.4484040404422514" />
+      <entry key="S2" value="3.066063606908195" />
+      <entry key="S5" value="4.372715608248274" />
+      <entry key="S10" value="5.685377569845446" />
+      <entry key="S30" value="9.526695554519884" />
+      <entry key="S60" value="15.238568874266795" />
+      <entry key="M2" value="22.221301406464086" />
+      <entry key="M5" value="32.46444912949928" />
+      <entry key="M10" value="42.600809672612" />
+      <entry key="M15" value="48.889719311327674" />
+      <entry key="M30" value="60.14006815485389" />
+      <entry key="H1" value="72.19252433714914" />
+      <entry key="H2" value="82.67552063758365" />
+      <entry key="H4" value="89.8990332951126" />
+      <entry key="D1" value="97.32994408259552" />
+      <entry key="W1" value="98.75732726123283" />
+    </decayedCancelled>
+    <decayedSelected>
+      <entry key="MS100" value="0.0" />
+      <entry key="MS500" value="0.0" />
+      <entry key="S2" value="2.0079558888715527E-122" />
+      <entry key="S5" value="2.0946027393192827E-49" />
+      <entry key="S10" value="4.576683012094325E-25" />
+      <entry key="S30" value="7.706377474687199E-9" />
+      <entry key="S60" value="8.778597538722906E-5" />
+      <entry key="M2" value="0.009369417024941998" />
+      <entry key="M5" value="0.1544148200540539" />
+      <entry key="M10" value="0.3941400925658953" />
+      <entry key="M15" value="0.5476905098608525" />
+      <entry key="M30" value="0.8382870150591665" />
+      <entry key="H1" value="1.1811543543624228" />
+      <entry key="H2" value="1.4954809937667486" />
+      <entry key="H4" value="1.7170549322846735" />
+      <entry key="D1" value="1.9478226238727625" />
+      <entry key="W1" value="1.9924118437288265" />
+    </decayedSelected>
+    <decayedShown>
+      <entry key="MS100" value="1.358104445126692" />
+      <entry key="MS500" value="2.431055596759833" />
+      <entry key="S2" value="3.0607410539734423" />
+      <entry key="S5" value="4.369720862283996" />
+      <entry key="S10" value="5.683217608883041" />
+      <entry key="S30" value="9.522048386318195" />
+      <entry key="S60" value="15.232032403985208" />
+      <entry key="M2" value="22.22417874005471" />
+      <entry key="M5" value="32.61433364414303" />
+      <entry key="M10" value="42.99190359122505" />
+      <entry key="M15" value="49.435096872479335" />
+      <entry key="M30" value="60.976970267133474" />
+      <entry key="H1" value="73.3728720946482" />
+      <entry key="H2" value="84.1705498535335" />
+      <entry key="H4" value="91.61584576846614" />
+      <entry key="D1" value="99.27772346626229" />
+      <entry key="W1" value="100.7497328502478" />
+    </decayedShown>
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 2,
+  &quot;fromUser&quot;: false
+}</component>
+  <component name="ProjectId" id="3Dwx3fClCNe68et0w1O7j5OsvUI" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
+    "codeWithMe.voiceChat.enabledByDefault": "false",
+    "com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1": "true",
+    "git-widget-placeholder": "main",
+    "ignore.virus.scanning.warn.message": "true",
+    "junie.onboarding.icon.badge.shown": "true",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "C:/Code/mini-bookstore",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "project.structure.last.edited": "SDKs",
+    "project.structure.proportion": "0.0",
+    "project.structure.side.proportion": "0.2",
+    "settings.editor.selected.configurable": "reference.settings.project.maven.importing",
+    "to.speed.mode.migration.done": "true",
+    "vue.rearranger.settings.migration": "true"
+  }
+}]]></component>
+  <component name="RunManager">
+    <configuration name="MiniBookstoreApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
+      <option name="ALTERNATIVE_JRE_PATH" value="corretto-1.8" />
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="true" />
+      <option name="FRAME_DEACTIVATION_UPDATE_POLICY" value="UpdateClassesAndResources" />
+      <module name="mini-bookstore" />
+      <option name="SPRING_BOOT_MAIN_CLASS" value="com.example.mini_bookstore.MiniBookstoreApplication" />
+      <option name="UPDATE_ACTION_UPDATE_POLICY" value="UpdateClassesAndResources" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-jdk-30f59d01ecdd-37e91769500f-intellij.indexing.shared.core-IU-261.24374.151" />
+        <option value="bundled-js-predefined-d6986cc7102b-31caf2ab9e3c-JavaScript-IU-261.24374.151" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="e35169ef-5c4a-4920-8441-88816a2ed1da" name="Changes" comment="" />
+      <created>1779206736461</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1779206736461</updated>
+      <workItem from="1779206738121" duration="1318000" />
+      <workItem from="1779395396587" duration="143000" />
+      <workItem from="1779395817171" duration="407000" />
+      <workItem from="1779396275744" duration="584000" />
+      <workItem from="1779396908625" duration="932000" />
+      <workItem from="1779397855575" duration="533000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="XSLT-Support.FileAssociations.UIState">
+    <expand />
+    <select />
+  </component>
+</project>
