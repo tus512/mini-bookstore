@@ -4,29 +4,20 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="e35169ef-5c4a-4920-8441-88816a2ed1da" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/mini-store.iml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/.gitattributes" beforeDir="false" afterPath="$PROJECT_DIR$/backend/.gitattributes" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/backend/.gitignore" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/build.gradle" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/gradle/wrapper/gradle-wrapper.jar" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/gradle/wrapper/gradle-wrapper.properties" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/gradlew" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/gradlew.bat" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/settings.gradle" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/mini_store/MiniStoreApplication.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/example/mini_store/MiniStoreController.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/resources/application.properties" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/test/java/com/example/mini_store/MiniStoreApplicationTests.java" beforeDir="false" />
+    <list default="true" id="e35169ef-5c4a-4920-8441-88816a2ed1da" name="Changes" comment="config: java 1.8 instead of java 21">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/backend/pom.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ChangesViewManager">
+    <option name="groupingKeys">
+      <option value="directory" />
+      <option value="repository" />
+    </option>
   </component>
   <component name="CompilerWorkspaceConfiguration">
     <option name="MAKE_PROJECT_ON_SAVE" value="true" />
@@ -43,61 +34,61 @@
   </component>
   <component name="NextEditCompletionFeaturesState">
     <decayedCancelled>
-      <entry key="MS100" value="1.4118785928190363" />
-      <entry key="MS500" value="2.4484040404422514" />
-      <entry key="S2" value="3.066063606908195" />
-      <entry key="S5" value="4.372715608248274" />
-      <entry key="S10" value="5.685377569845446" />
-      <entry key="S30" value="9.526695554519884" />
-      <entry key="S60" value="15.238568874266795" />
-      <entry key="M2" value="22.221301406464086" />
-      <entry key="M5" value="32.46444912949928" />
-      <entry key="M10" value="42.600809672612" />
-      <entry key="M15" value="48.889719311327674" />
-      <entry key="M30" value="60.14006815485389" />
-      <entry key="H1" value="72.19252433714914" />
-      <entry key="H2" value="82.67552063758365" />
-      <entry key="H4" value="89.8990332951126" />
-      <entry key="D1" value="97.32994408259552" />
-      <entry key="W1" value="98.75732726123283" />
+      <entry key="MS100" value="1.2862354419160815" />
+      <entry key="MS500" value="2.298165769667395" />
+      <entry key="S2" value="2.7911005154903994" />
+      <entry key="S5" value="2.9133163704880354" />
+      <entry key="S10" value="2.95611862580974" />
+      <entry key="S30" value="2.9877439303668014" />
+      <entry key="S60" value="3.1755429761354668" />
+      <entry key="M2" value="4.84588817747777" />
+      <entry key="M5" value="13.58424203034298" />
+      <entry key="M10" value="28.331816176248964" />
+      <entry key="M15" value="39.60573528162608" />
+      <entry key="M30" value="60.271239705576996" />
+      <entry key="H1" value="80.20711693165852" />
+      <entry key="H2" value="96.41820070848365" />
+      <entry key="H4" value="107.34143370669022" />
+      <entry key="D1" value="118.4972000706003" />
+      <entry key="W1" value="120.63635984201154" />
     </decayedCancelled>
     <decayedSelected>
       <entry key="MS100" value="0.0" />
       <entry key="MS500" value="0.0" />
-      <entry key="S2" value="2.0079558888715527E-122" />
-      <entry key="S5" value="2.0946027393192827E-49" />
-      <entry key="S10" value="4.576683012094325E-25" />
-      <entry key="S30" value="7.706377474687199E-9" />
-      <entry key="S60" value="8.778597538722906E-5" />
-      <entry key="M2" value="0.009369417024941998" />
-      <entry key="M5" value="0.1544148200540539" />
-      <entry key="M10" value="0.3941400925658953" />
-      <entry key="M15" value="0.5476905098608525" />
-      <entry key="M30" value="0.8382870150591665" />
-      <entry key="H1" value="1.1811543543624228" />
-      <entry key="H2" value="1.4954809937667486" />
-      <entry key="H4" value="1.7170549322846735" />
-      <entry key="D1" value="1.9478226238727625" />
-      <entry key="W1" value="1.9924118437288265" />
+      <entry key="S2" value="2.883885157434371E-271" />
+      <entry key="S5" value="6.081226575449729E-109" />
+      <entry key="S10" value="7.798221961094535E-55" />
+      <entry key="S30" value="9.204464578939958E-19" />
+      <entry key="S60" value="9.593990086997142E-10" />
+      <entry key="M2" value="3.097416679589935E-5" />
+      <entry key="M5" value="0.015718235992872732" />
+      <entry key="M10" value="0.1257500096032833" />
+      <entry key="M15" value="0.2557251787378609" />
+      <entry key="M30" value="0.572811695389336" />
+      <entry key="H1" value="0.9763740406866743" />
+      <entry key="H2" value="1.359676784329501" />
+      <entry key="H4" value="1.637237116360293" />
+      <entry key="D1" value="1.9324308905141971" />
+      <entry key="W1" value="1.9901550352791022" />
     </decayedSelected>
     <decayedShown>
-      <entry key="MS100" value="1.358104445126692" />
-      <entry key="MS500" value="2.431055596759833" />
-      <entry key="S2" value="3.0607410539734423" />
-      <entry key="S5" value="4.369720862283996" />
-      <entry key="S10" value="5.683217608883041" />
-      <entry key="S30" value="9.522048386318195" />
-      <entry key="S60" value="15.232032403985208" />
-      <entry key="M2" value="22.22417874005471" />
-      <entry key="M5" value="32.61433364414303" />
-      <entry key="M10" value="42.99190359122505" />
-      <entry key="M15" value="49.435096872479335" />
-      <entry key="M30" value="60.976970267133474" />
-      <entry key="H1" value="73.3728720946482" />
-      <entry key="H2" value="84.1705498535335" />
-      <entry key="H4" value="91.61584576846614" />
-      <entry key="D1" value="99.27772346626229" />
-      <entry key="W1" value="100.7497328502478" />
+      <entry key="MS100" value="1.2594287191077194" />
+      <entry key="MS500" value="2.287870883270402" />
+      <entry key="S2" value="2.787902141140874" />
+      <entry key="S5" value="2.911974518692828" />
+      <entry key="S10" value="2.9554367331808558" />
+      <entry key="S30" value="2.9875124450929333" />
+      <entry key="S60" value="3.1753769776029888" />
+      <entry key="M2" value="4.845630634905001" />
+      <entry key="M5" value="13.59916864005343" />
+      <entry key="M10" value="28.456344084561263" />
+      <entry key="M15" value="39.86018840189698" />
+      <entry key="M30" value="60.84299432706183" />
+      <entry key="H1" value="81.18276472897485" />
+      <entry key="H2" value="97.77743590871476" />
+      <entry key="H4" value="108.97842393909515" />
+      <entry key="D1" value="120.42958540709304" />
+      <entry key="W1" value="122.62650824932716" />
     </decayedShown>
   </component>
   <component name="ProjectColorInfo">{
@@ -169,12 +160,33 @@
       <workItem from="1779395817171" duration="407000" />
       <workItem from="1779396275744" duration="584000" />
       <workItem from="1779396908625" duration="932000" />
-      <workItem from="1779397855575" duration="533000" />
+      <workItem from="1779397855575" duration="3397000" />
     </task>
+    <task id="LOCAL-00001" summary="config: java 1.8 instead of java 21">
+      <option name="closed" value="true" />
+      <created>1779398510478</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1779398510478</updated>
+    </task>
+    <task id="LOCAL-00002" summary="config: java 1.8 instead of java 21">
+      <option name="closed" value="true" />
+      <created>1779398537563</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1779398537563</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="config: java 1.8 instead of java 21" />
+    <option name="LAST_COMMIT_MESSAGE" value="config: java 1.8 instead of java 21" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />
