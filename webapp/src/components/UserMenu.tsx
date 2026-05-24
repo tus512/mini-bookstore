@@ -23,8 +23,8 @@ export default function UserMenu({ onClose }: UserMenuProps) {
         onClose();
       }
     };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
+    document.addEventListener('click', handler);
+    return () => document.removeEventListener('click', handler);
   }, [onClose]);
 
   const handleLogout = () => {

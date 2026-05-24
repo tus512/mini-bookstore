@@ -7,15 +7,48 @@ import { BookOpen, Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import { useBookstoreStore } from '@/lib/store';
 import Image from 'next/image';
 import toast from 'react-hot-toast';
+import apiClient from '@/lib/apiClient';
+import { useDoRequest } from '@/hooks/useDoRequest';
 
 export default function LoginPage() {
   const router = useRouter();
   const { login, user } = useBookstoreStore();
-  
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
+
+  const { loading, doRequest: doLogin } = useDoRequest({
+    url: '/auth/login',
+    method: 'POST',
+    formParams: { email, password },
+    onSuccess: async (data) => {
+      localStorage.setItem('auth_token', data.token);
+
+      try {
+        const userRes = await apiClient.get('/auth/me');
+        const userData = userRes.data;
+
+        login(userData);
+
+        toast.success(`Welcome back, ${userData.fullName}!`, {
+          icon: '👋',
+          style: {
+            background: '#fbfbf9',
+            color: '#2a2421',
+            border: '1px solid #ebdcd0',
+          }
+        });
+
+        router.push('/');
+      } catch (err: any) {
+        toast.error('Failed to fetch user profile.');
+      }
+    },
+    onError: (err) => {
+      toast.error(err.message || 'Login failed. Please check your credentials.');
+    }
+  });
 
   // If already logged in, show redirect or welcome
   if (user) {
@@ -27,8 +60,8 @@ export default function LoginPage() {
           <Link href="/" className="px-4 py-2 border border-border-warm rounded-md text-xs font-semibold hover:bg-cream-dark transition-all text-text-muted">
             Go Home
           </Link>
-          <button 
-            onClick={() => router.push('/explore')} 
+          <button
+            onClick={() => router.push('/explore')}
             className="px-4 py-2 bg-primary text-white rounded-md text-xs font-bold btn-premium uppercase tracking-widest cursor-pointer shadow-md"
           >
             Explore Library
@@ -45,39 +78,18 @@ export default function LoginPage() {
       return;
     }
 
-    setLoading(true);
-
-    // Simulate network delay
-    setTimeout(() => {
-      // Extract initials or name from email
-      const name = email.split('@')[0];
-      const displayName = name.charAt(0).toUpperCase() + name.slice(1);
-      
-      login(displayName, email);
-      setLoading(false);
-      
-      toast.success(`Welcome back, ${displayName}!`, {
-        icon: '👋',
-        style: {
-          background: '#fbfbf9',
-          color: '#2a2421',
-          border: '1px solid #ebdcd0',
-        }
-      });
-      
-      router.push('/');
-    }, 1000);
+    doLogin();
   };
 
   return (
     <div className="max-w-5xl mx-auto my-12 px-4 sm:px-6 lg:px-8 font-sans select-none">
-      
+
       <div className="bg-white rounded-2xl border border-border-warm overflow-hidden shadow-sm grid grid-cols-1 md:grid-cols-2 min-h-[550px]">
-        
+
         {/* Left Side: Cozy Cozy Coffee & Book Image (Matching the mockup!) */}
         <div className="relative hidden md:block w-full h-full bg-cream-dark">
-          <Image 
-            src="https://images.unsplash.com/photo-1543002588-bfa74002ed7e?q=80&w=800&auto=format&fit=crop" 
+          <Image
+            src="https://images.unsplash.com/photo-1543002588-bfa74002ed7e?q=80&w=800&auto=format&fit=crop"
             alt="Warm coffee cup with cozy reading books and dry flowers"
             fill
             className="object-cover"
@@ -90,7 +102,7 @@ export default function LoginPage() {
 
         {/* Right Side: Login form */}
         <div className="p-8 sm:p-12 lg:p-16 flex flex-col justify-center text-left space-y-8">
-          
+
           {/* Logo & Headline */}
           <div className="space-y-3">
             <div className="flex items-center gap-2">
@@ -107,7 +119,7 @@ export default function LoginPage() {
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-5">
-            
+
             {/* Email field */}
             <div className="space-y-1.5">
               <label className="text-xs font-bold text-text-dark uppercase tracking-wider">Email Address</label>

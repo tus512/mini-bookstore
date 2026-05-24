@@ -8,12 +8,12 @@ export interface CartItem {
 }
 
 export interface UserProfile {
+  id?: string;
   name: string;
   email: string;
   avatar: string;
   phone: string;
-  address: string;
-  isAdmin: boolean;
+  role?: string;
 }
 
 export interface OrderItem {
@@ -28,13 +28,13 @@ interface BookstoreState {
   // Catalog collections
   books: Book[];
   categories: Category[];
-  
+
   // Client states
   cart: CartItem[];
   wishlist: Book[];
   user: UserProfile | null;
   orders: OrderItem[];
-  
+
   // Actions
   addToCart: (book: Book, quantity?: number) => void;
   removeFromCart: (bookId: string) => void;
@@ -42,20 +42,20 @@ interface BookstoreState {
   clearCart: () => void;
   toggleWishlist: (book: Book) => void;
   isInWishlist: (bookId: string) => boolean;
-  
+
   // Auth actions
-  login: (name: string, email: string) => void;
+  login: (userData: any) => void;
   updateProfile: (profile: Partial<UserProfile>) => void;
   logout: () => void;
-  
+
   // Order actions
   addOrder: (order: OrderItem) => void;
-  
+
   // Admin Books CRUD
   addBook: (book: Book) => void;
   updateBook: (book: Book) => void;
   deleteBook: (bookId: string) => void;
-  
+
   // Admin Categories CRUD
   addCategory: (category: Category) => void;
   updateCategory: (category: Category) => void;
@@ -147,18 +147,16 @@ export const useBookstoreStore = create<BookstoreState>()(
         return get().wishlist.some((item) => item.id === bookId);
       },
 
-      login: (name, email) => {
-        // Automatically make them admin for this mock dashboard, or standard user
-        const isAdmin = email.toLowerCase().includes('admin') || email.toLowerCase().includes('alex');
-        set({ 
-          user: { 
-            name, 
-            email, 
-            avatar: `https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=150&auto=format&fit=crop`,
-            phone: '+1 (555) 019-2834',
-            address: '742 Evergreen Terrace, Springfield, OR 97477',
-            isAdmin
-          } 
+      login: (userData: any) => {
+        set({
+          user: {
+            id: userData.id,
+            name: userData.fullName || userData.name,
+            email: userData.email,
+            avatar: userData.avatar || `https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=150&auto=format&fit=crop`,
+            phone: userData.phone,
+            role: userData.role
+          }
         });
       },
 
