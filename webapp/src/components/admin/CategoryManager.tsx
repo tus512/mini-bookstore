@@ -1,10 +1,15 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Plus, Edit2, Trash2, Check, X, AlertTriangle, Tag } from 'lucide-react';
-import { useBookstoreStore } from '@/lib/store';
-import { Category } from '@/lib/mockData';
 import toast from 'react-hot-toast';
+import { useDoRequest } from '@/hooks/useDoRequest';
+
+export interface Category {
+  id: string;
+  name: string;
+  slug: string;
+}
 
 const ICONS = ['Book', 'FileText', 'User', 'Sparkles', 'Compass', 'Baby', 'Heart', 'Star', 'Tag', 'Globe'];
 
@@ -29,12 +34,8 @@ function CategoryRow({
           </div>
           <div>
             <p className="font-serif font-bold text-sm text-text-dark">{cat.name}</p>
-            <p className="text-[10px] text-text-muted mt-0.5 font-medium">Icon: {cat.iconName}</p>
           </div>
         </div>
-      </td>
-      <td className="px-5 py-3.5">
-        <span className="font-bold text-text-dark text-xs">{cat.count} books</span>
       </td>
       <td className="px-5 py-3.5 text-right">
         <div className="flex items-center justify-end gap-1.5">
@@ -59,42 +60,71 @@ function CategoryRow({
 }
 
 export default function CategoryManager() {
-  const { categories, addCategory, updateCategory, deleteCategory } = useBookstoreStore();
-  const [editing, setEditing] = useState<Category | null>(null);  // null = add mode
+  const [editing, setEditing] = useState<Category | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
 
-  const [form, setForm] = useState({ name: '', iconName: 'Book', count: 0 });
+  const [form, setForm] = useState({ name: '', slug: '' });
+
+  const { data: categories = [], doRequest: fetchCategories } = useDoRequest<Category[]>({
+    url: '/categories',
+    isFetchOnLoad: true,
+  });
+
+  const { doRequest: createCategory, loading: creating } = useDoRequest({
+    url: '/categories',
+    method: 'POST',
+    onSuccess: () => {
+      toast.success('Category added!');
+      setShowForm(false);
+      fetchCategories();
+    }
+  });
+
+  const { doRequest: updateCategory, loading: updating } = useDoRequest({
+    url: editing ? `/categories/${editing.id}` : '/categories',
+    method: 'PUT',
+    onSuccess: () => {
+      toast.success('Category updated!');
+      setShowForm(false);
+      fetchCategories();
+    }
+  });
+
+  const { doRequest: deleteCategory, loading: deleting } = useDoRequest({
+    url: confirmDelete ? `/categories/${confirmDelete}` : '/categories',
+    method: 'DELETE',
+    onSuccess: () => {
+      toast.success('Category deleted.');
+      setConfirmDelete(null);
+      fetchCategories();
+    }
+  });
 
   const openAdd = () => {
-    setForm({ name: '', iconName: 'Book', count: 0 });
+    setForm({ name: '', slug: '' });
     setEditing(null);
     setShowForm(true);
   };
 
   const openEdit = (cat: Category) => {
-    setForm({ name: cat.name, iconName: cat.iconName, count: cat.count });
+    setForm({ name: cat.name, slug: cat.slug || '' });
     setEditing(cat);
     setShowForm(true);
   };
 
   const handleSave = () => {
     if (!form.name.trim()) { toast.error('Category name is required.'); return; }
+    if (!form.slug.trim()) { toast.error('Slug is required.'); return; }
     if (editing) {
-      updateCategory({ ...editing, ...form });
-      toast.success(`Category "${form.name}" updated!`);
+      updateCategory(form);
     } else {
-      addCategory({ id: `cat-${Date.now()}`, ...form });
-      toast.success(`Category "${form.name}" added!`);
+      createCategory(form);
     }
-    setShowForm(false);
   };
 
   const handleDelete = (id: string) => {
-    const cat = categories.find(c => c.id === id);
-    deleteCategory(id);
-    setConfirmDelete(null);
-    toast.success(`Category "${cat?.name}" removed.`);
+    deleteCategory();
   };
 
   return (
@@ -117,7 +147,7 @@ export default function CategoryManager() {
             <thead>
               <tr className="border-b border-border-warm bg-cream-dark/30">
                 <th className="text-left px-5 py-3 font-bold text-text-muted uppercase tracking-wider">Category</th>
-                <th className="text-left px-5 py-3 font-bold text-text-muted uppercase tracking-wider">Count</th>
+                {/* <th className="text-left px-5 py-3 font-bold text-text-muted uppercase tracking-wider">Count</th> */}
                 <th className="text-right px-5 py-3 font-bold text-text-muted uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
@@ -154,31 +184,23 @@ export default function CategoryManager() {
                 <input
                   className={INPUT}
                   value={form.name}
-                  onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+                  onChange={e => {
+                    const name = e.target.value;
+                    const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+                    setForm(f => ({ ...f, name, slug: editing ? f.slug : slug }));
+                  }}
                   placeholder="e.g. Science Fiction"
                   autoFocus
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className={LABEL}>Icon Name</label>
-                <select
-                  className={INPUT}
-                  value={form.iconName}
-                  onChange={e => setForm(f => ({ ...f, iconName: e.target.value }))}
-                >
-                  {ICONS.map(i => <option key={i} value={i}>{i}</option>)}
-                </select>
-              </div>
-
-              <div className="space-y-1.5">
-                <label className={LABEL}>Book Count</label>
+                <label className={LABEL}>Slug *</label>
                 <input
                   className={INPUT}
-                  type="number"
-                  min="0"
-                  value={form.count}
-                  onChange={e => setForm(f => ({ ...f, count: parseInt(e.target.value) || 0 }))}
+                  value={form.slug}
+                  onChange={e => setForm(f => ({ ...f, slug: e.target.value }))}
+                  placeholder="e.g. science-fiction"
                 />
               </div>
             </div>
@@ -187,9 +209,9 @@ export default function CategoryManager() {
               <button onClick={() => setShowForm(false)} className="px-4 py-2 border border-border-warm rounded-lg text-xs font-bold text-text-muted hover:bg-cream-dark cursor-pointer transition-colors">
                 Cancel
               </button>
-              <button onClick={handleSave} className="flex items-center gap-1.5 px-4 py-2 bg-primary text-white rounded-lg text-xs font-bold hover:bg-primary-hover cursor-pointer transition-colors shadow-sm">
+              <button disabled={creating || updating} onClick={handleSave} className="flex items-center gap-1.5 px-4 py-2 bg-primary text-white rounded-lg text-xs font-bold hover:bg-primary-hover cursor-pointer transition-colors shadow-sm disabled:opacity-50">
                 <Check className="w-3.5 h-3.5" />
-                {editing ? 'Save Changes' : 'Add Category'}
+                {editing ? (updating ? 'Saving...' : 'Save Changes') : (creating ? 'Adding...' : 'Add Category')}
               </button>
             </div>
           </div>
@@ -212,7 +234,9 @@ export default function CategoryManager() {
             </div>
             <div className="flex justify-end gap-2 pt-2">
               <button onClick={() => setConfirmDelete(null)} className="px-4 py-2 border border-border-warm rounded-lg text-xs font-bold text-text-muted hover:bg-cream-dark cursor-pointer transition-colors">Cancel</button>
-              <button onClick={() => handleDelete(confirmDelete)} className="px-4 py-2 bg-red-500 text-white rounded-lg text-xs font-bold hover:bg-red-600 cursor-pointer transition-colors shadow-sm">Delete</button>
+              <button disabled={deleting} onClick={() => handleDelete(confirmDelete)} className="px-4 py-2 bg-red-500 text-white rounded-lg text-xs font-bold hover:bg-red-600 cursor-pointer transition-colors shadow-sm disabled:opacity-50">
+                {deleting ? 'Deleting...' : 'Delete'}
+              </button>
             </div>
           </div>
         </div>

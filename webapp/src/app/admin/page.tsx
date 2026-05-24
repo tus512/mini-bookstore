@@ -9,9 +9,9 @@ import BookManager from '@/components/admin/BookManager';
 import CategoryManager from '@/components/admin/CategoryManager';
 
 const TABS = [
-  { id: 'overview',    label: 'Overview',    icon: BarChart3 },
-  { id: 'books',       label: 'Books',       icon: BookOpen  },
-  { id: 'categories',  label: 'Categories',  icon: Tag       },
+  { id: 'overview', label: 'Overview', icon: BarChart3 },
+  { id: 'books', label: 'Books', icon: BookOpen },
+  { id: 'categories', label: 'Categories', icon: Tag },
 ];
 
 export default function AdminPage() {
@@ -35,7 +35,7 @@ export default function AdminPage() {
     );
   }
 
-  if (!user.isAdmin) {
+  if (user.role !== 'ADMIN') {
     return (
       <div className="max-w-md mx-auto my-24 text-center space-y-4 px-4 font-sans">
         <div className="w-16 h-16 bg-red-50 border border-red-200 rounded-full flex items-center justify-center mx-auto">
@@ -56,12 +56,12 @@ export default function AdminPage() {
   const inStockCount = books.filter(b => b.inStock).length;
 
   const stats = [
-    { label: 'Total Books',    value: books.length,              icon: <BookOpen className="w-5 h-5 text-primary" />,         color: 'bg-primary-light border-border-warm' },
-    { label: 'Categories',     value: categories.length,         icon: <Tag className="w-5 h-5 text-purple-500" />,           color: 'bg-purple-50 border-purple-200' },
-    { label: 'Total Orders',   value: orders.length,             icon: <ShoppingBag className="w-5 h-5 text-blue-500" />,     color: 'bg-blue-50 border-blue-200' },
-    { label: 'Revenue',        value: `$${totalRevenue.toFixed(0)}`, icon: <BarChart3 className="w-5 h-5 text-emerald-500" />, color: 'bg-emerald-50 border-emerald-200' },
-    { label: 'In Stock',       value: inStockCount,              icon: <Star className="w-5 h-5 text-amber-500" />,           color: 'bg-amber-50 border-amber-200' },
-    { label: 'Avg Rating',     value: avgRating,                 icon: <Users className="w-5 h-5 text-rose-500" />,           color: 'bg-rose-50 border-rose-200' },
+    { label: 'Total Books', value: books.length, icon: <BookOpen className="w-5 h-5 text-primary" />, color: 'bg-primary-light border-border-warm' },
+    { label: 'Categories', value: categories.length, icon: <Tag className="w-5 h-5 text-purple-500" />, color: 'bg-purple-50 border-purple-200' },
+    { label: 'Total Orders', value: orders.length, icon: <ShoppingBag className="w-5 h-5 text-blue-500" />, color: 'bg-blue-50 border-blue-200' },
+    { label: 'Revenue', value: `$${totalRevenue.toFixed(0)}`, icon: <BarChart3 className="w-5 h-5 text-emerald-500" />, color: 'bg-emerald-50 border-emerald-200' },
+    { label: 'In Stock', value: inStockCount, icon: <Star className="w-5 h-5 text-amber-500" />, color: 'bg-amber-50 border-amber-200' },
+    { label: 'Avg Rating', value: avgRating, icon: <Users className="w-5 h-5 text-rose-500" />, color: 'bg-rose-50 border-rose-200' },
   ];
 
   return (
@@ -121,11 +121,10 @@ export default function AdminPage() {
           <button
             key={id}
             onClick={() => setActiveTab(id)}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
-              activeTab === id
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${activeTab === id
                 ? 'bg-white text-primary shadow-sm border border-border-warm'
                 : 'text-text-muted hover:text-text-dark'
-            }`}
+              }`}
           >
             <Icon className="w-3.5 h-3.5" />
             {label}
@@ -153,12 +152,11 @@ export default function AdminPage() {
                       </p>
                     </div>
                     <div className="flex items-center gap-4">
-                      <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full border uppercase tracking-wider ${
-                        order.status === 'Delivered' ? 'text-emerald-700 bg-emerald-50 border-emerald-200' :
-                        order.status === 'Shipped'   ? 'text-blue-700 bg-blue-50 border-blue-200' :
-                        order.status === 'Pending'   ? 'text-amber-700 bg-amber-50 border-amber-200' :
-                                                       'text-red-600 bg-red-50 border-red-200'
-                      }`}>
+                      <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full border uppercase tracking-wider ${order.status === 'Delivered' ? 'text-emerald-700 bg-emerald-50 border-emerald-200' :
+                          order.status === 'Shipped' ? 'text-blue-700 bg-blue-50 border-blue-200' :
+                            order.status === 'Pending' ? 'text-amber-700 bg-amber-50 border-amber-200' :
+                              'text-red-600 bg-red-50 border-red-200'
+                        }`}>
                         {order.status}
                       </span>
                       <span className="font-serif font-black text-sm text-text-dark">${order.total.toFixed(2)}</span>

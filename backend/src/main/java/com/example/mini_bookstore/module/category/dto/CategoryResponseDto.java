@@ -16,8 +16,6 @@ public class CategoryResponseDto {
     private UUID id;
     private String name;
     private String slug;
-    private UUID parentId;
-    private Integer sortOrder;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }
