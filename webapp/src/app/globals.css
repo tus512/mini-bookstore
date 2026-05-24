@@ -1,0 +1,90 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #8c6239;
+  --color-primary-hover: #7c5832;
+  --color-primary-light: #f4ece4;
+  --color-accent: #e5d5c5;
+  --color-cream-bg: #fbfbf9;
+  --color-cream-dark: #f4f1ea;
+  --color-clay: #7c6244;
+  --color-text-dark: #2a2421;
+  --color-text-muted: #706761;
+  --color-border-warm: #ebdcd0;
+  --color-border-light: #f1ebd8;
+  
+  --font-serif: var(--font-playfair), Georgia, serif;
+  --font-sans: var(--font-outfit), sans-serif;
+}
+
+@layer base {
+  body {
+    background-color: var(--color-cream-bg);
+    color: var(--color-text-dark);
+    font-family: var(--font-sans);
+    overflow-x: hidden;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-serif);
+    font-weight: 600;
+  }
+}
+
+/* Custom Scrollbar for a premium look */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-cream-bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-accent);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-primary);
+}
+
+/* Premium Animations and Glassmorphism */
+.glass-panel {
+  background: rgba(251, 251, 249, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(235, 220, 208, 0.4);
+}
+
+.book-card-hover {
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.book-card-hover:hover {
+  transform: translateY(-8px) scale(1.01);
+  box-shadow: 0 16px 32px -8px rgba(140, 98, 57, 0.12);
+}
+
+.btn-premium {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.btn-premium::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 120%;
+  height: 0;
+  background: rgba(255, 255, 255, 0.1);
+  transform: translate(-50%, -50%) rotate(45deg);
+  transition: all 0.5s ease;
+}
+
+.btn-premium:hover::after {
+  height: 300%;
+}
