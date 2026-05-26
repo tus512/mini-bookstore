@@ -19,9 +19,9 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class SalesReportScheduler {
+public class ReportScheduler {
 
-  private final SalesReportRepository salesReportRepository;
+  private final ReportRepository reportRepository;
 
   // Thread-safe buffer to hold events consumed in real-time until the next 5-minute aggregation run
   private final Queue<OrderSuccessEvent> eventBuffer = new ConcurrentLinkedQueue<>();
@@ -32,7 +32,7 @@ public class SalesReportScheduler {
   @KafkaListener(topics = "order-success", groupId = "report-group")
   public void consumeOrderEvent(OrderSuccessEvent event) {
     if (event != null) {
-      System.out.println("SalesReportScheduler: Consumed event for buffering: " + event);
+      System.out.println("ReportScheduler: Consumed event for buffering: " + event);
       eventBuffer.add(event);
     }
   }
@@ -44,7 +44,7 @@ public class SalesReportScheduler {
   @Scheduled(fixedRate = 300000) // 5 minutes in milliseconds
   @Transactional
   public void runSalesReportAggregation() {
-    System.out.println("SalesReportScheduler: Starting 5-minute daily sales aggregation. Buffered event count: " + eventBuffer.size());
+    System.out.println("ReportScheduler: Starting 5-minute daily sales aggregation. Buffered event count: " + eventBuffer.size());
 
     if (eventBuffer.isEmpty()) {
       return;
@@ -75,26 +75,29 @@ public class SalesReportScheduler {
           .map(e -> e.getTotalAmount() != null ? e.getTotalAmount() : BigDecimal.ZERO)
           .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-      long dailyOrdersCount = dateEvents.size();
+      int dailyOrdersCount = dateEvents.size();
 
       // Load existing report or create a new one
-      SalesReport report = salesReportRepository.findByReportDate(reportDate)
-          .orElseGet(() -> SalesReport.builder()
+      Report report = reportRepository.findByReportDate(reportDate)
+          .orElseGet(() -> Report.builder()
               .reportDate(reportDate)
-              .totalSales(BigDecimal.ZERO)
-              .totalOrders(0L)
+              .totalRevenue(BigDecimal.ZERO)
+              .totalOrders(0)
+              .totalItemsSold(0)
+              .periodStart(reportDate.atStartOfDay())
+              .periodEnd(reportDate.atTime(23, 59, 59))
               .build());
 
       // Accumulate the aggregated numbers
-      report.setTotalSales(report.getTotalSales().add(dailyTotal));
+      report.setTotalRevenue(report.getTotalRevenue().add(dailyTotal));
       report.setTotalOrders(report.getTotalOrders() + dailyOrdersCount);
-      report.setUpdatedAt(LocalDateTime.now());
+      report.setLastAggregatedAt(LocalDateTime.now());
 
-      salesReportRepository.save(report);
-      System.out.println("SalesReportScheduler: Updated SalesReport for " + reportDate + ": Total Sales = " + report.getTotalSales() + ", Total Orders = " + report.getTotalOrders());
+      reportRepository.save(report);
+      System.out.println("ReportScheduler: Updated Report for " + reportDate + ": Total Revenue = " + report.getTotalRevenue() + ", Total Orders = " + report.getTotalOrders());
     }
 
-    System.out.println("SalesReportScheduler: Finished 5-minute sales aggregation successfully.");
+    System.out.println("ReportScheduler: Finished 5-minute sales aggregation successfully.");
   }
 
   /**

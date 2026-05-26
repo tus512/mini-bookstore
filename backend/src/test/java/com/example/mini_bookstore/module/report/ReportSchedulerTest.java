@@ -17,16 +17,16 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class SalesReportSchedulerTest {
+public class ReportSchedulerTest {
 
   @Mock
-  private SalesReportRepository salesReportRepository;
+  private ReportRepository reportRepository;
 
-  private SalesReportScheduler scheduler;
+  private ReportScheduler scheduler;
 
   @BeforeEach
   void setUp() {
-    scheduler = new SalesReportScheduler(salesReportRepository);
+    scheduler = new ReportScheduler(reportRepository);
   }
 
   @Test
@@ -47,7 +47,7 @@ public class SalesReportSchedulerTest {
   @Test
   void testRunSalesReportAggregation_doesNothingOnEmptyBuffer() {
     scheduler.runSalesReportAggregation();
-    verifyNoInteractions(salesReportRepository);
+    verifyNoInteractions(reportRepository);
   }
 
   @Test
@@ -71,7 +71,7 @@ public class SalesReportSchedulerTest {
     scheduler.consumeOrderEvent(event2);
 
     // Mock findByReportDate to return empty (no pre-existing report)
-    when(salesReportRepository.findByReportDate(today)).thenReturn(Optional.empty());
+    when(reportRepository.findByReportDate(today)).thenReturn(Optional.empty());
 
     scheduler.runSalesReportAggregation();
 
@@ -79,14 +79,14 @@ public class SalesReportSchedulerTest {
     assertTrue(scheduler.getEventBuffer().isEmpty());
 
     // Verify repository save was called with the aggregated values
-    ArgumentCaptor<SalesReport> reportCaptor = ArgumentCaptor.forClass(SalesReport.class);
-    verify(salesReportRepository).save(reportCaptor.capture());
+    ArgumentCaptor<Report> reportCaptor = ArgumentCaptor.forClass(Report.class);
+    verify(reportRepository).save(reportCaptor.capture());
 
-    SalesReport savedReport = reportCaptor.getValue();
+    Report savedReport = reportCaptor.getValue();
     assertEquals(today, savedReport.getReportDate());
-    assertEquals(0, BigDecimal.valueOf(150.50).compareTo(savedReport.getTotalSales()));
-    assertEquals(2L, savedReport.getTotalOrders());
-    assertNotNull(savedReport.getUpdatedAt());
+    assertEquals(0, BigDecimal.valueOf(150.50).compareTo(savedReport.getTotalRevenue()));
+    assertEquals(2, savedReport.getTotalOrders());
+    assertNotNull(savedReport.getLastAggregatedAt());
   }
 
   @Test
@@ -103,14 +103,14 @@ public class SalesReportSchedulerTest {
     scheduler.consumeOrderEvent(event);
 
     // Existing daily report loaded from DB
-    SalesReport existingReport = SalesReport.builder()
-        .id(1L)
+    Report existingReport = Report.builder()
+        .id(java.util.UUID.randomUUID())
         .reportDate(today)
-        .totalSales(BigDecimal.valueOf(200.00))
-        .totalOrders(3L)
+        .totalRevenue(BigDecimal.valueOf(200.00))
+        .totalOrders(3)
         .build();
 
-    when(salesReportRepository.findByReportDate(today)).thenReturn(Optional.of(existingReport));
+    when(reportRepository.findByReportDate(today)).thenReturn(Optional.of(existingReport));
 
     scheduler.runSalesReportAggregation();
 
@@ -118,12 +118,12 @@ public class SalesReportSchedulerTest {
     assertTrue(scheduler.getEventBuffer().isEmpty());
 
     // Verify repository save was called with the updated values
-    ArgumentCaptor<SalesReport> reportCaptor = ArgumentCaptor.forClass(SalesReport.class);
-    verify(salesReportRepository).save(reportCaptor.capture());
+    ArgumentCaptor<Report> reportCaptor = ArgumentCaptor.forClass(Report.class);
+    verify(reportRepository).save(reportCaptor.capture());
 
-    SalesReport savedReport = reportCaptor.getValue();
+    Report savedReport = reportCaptor.getValue();
     assertEquals(today, savedReport.getReportDate());
-    assertEquals(0, BigDecimal.valueOf(275.00).compareTo(savedReport.getTotalSales()));
-    assertEquals(4L, savedReport.getTotalOrders());
+    assertEquals(0, BigDecimal.valueOf(275.00).compareTo(savedReport.getTotalRevenue()));
+    assertEquals(4, savedReport.getTotalOrders());
   }
 }
