@@ -101,6 +101,7 @@ export default function RegisterPage() {
         {/* Left Side: Cozy Book & Floral elements (Matching the mockup!) */}
         <div className="relative hidden md:block w-full h-full bg-cream-dark">
           <Image
+            unoptimized
             src="https://images.unsplash.com/photo-1544947950-fa07a98d237f?q=80&w=800&auto=format&fit=crop"
             alt="Minimalist elegant book pages lying next to dried floral stem"
             fill

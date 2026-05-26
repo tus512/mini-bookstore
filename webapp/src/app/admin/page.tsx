@@ -1,12 +1,13 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ShieldCheck, BookOpen, Tag, BarChart3, ArrowLeft, Users, ShoppingBag, Star } from 'lucide-react';
+import { ShieldCheck, BookOpen, Tag, BarChart3, ArrowLeft, Users, ShoppingBag, Star, ChevronDown, ChevronUp } from 'lucide-react';
 import { useBookstoreStore } from '@/lib/store';
 import BookManager from '@/components/admin/BookManager';
 import CategoryManager from '@/components/admin/CategoryManager';
+import apiClient from '@/lib/apiClient';
 
 const TABS = [
   { id: 'overview', label: 'Overview', icon: BarChart3 },
@@ -14,10 +15,29 @@ const TABS = [
   { id: 'categories', label: 'Categories', icon: Tag },
 ];
 
+const STATUS_LABELS = ['Pending', 'Confirmed', 'Shipped', 'Delivered', 'Cancelled'];
+const STATUS_STYLES = [
+  'text-amber-700 bg-amber-50 border-amber-200',    // 0: Pending
+  'text-indigo-700 bg-indigo-50 border-indigo-200',   // 1: Confirmed
+  'text-blue-700 bg-blue-50 border-blue-200',       // 2: Shipped
+  'text-emerald-700 bg-emerald-50 border-emerald-200', // 3: Delivered
+  'text-red-600 bg-red-50 border-red-200',          // 4: Cancelled
+];
+
 export default function AdminPage() {
   const router = useRouter();
-  const { user, books, categories, orders } = useBookstoreStore();
+  const { user, books, categories } = useBookstoreStore();
   const [activeTab, setActiveTab] = useState('overview');
+  const [orders, setOrders] = useState<any[]>([]);
+  const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (user && user.role === 'ADMIN') {
+      apiClient.get('/orders', { params: { size: 100 } })
+        .then(res => setOrders(res.data.content || []))
+        .catch(err => console.error('Failed to load admin orders metric:', err));
+    }
+  }, [user]);
 
   // Guard: must be logged in AND admin
   if (!user) {
@@ -51,7 +71,7 @@ export default function AdminPage() {
   }
 
   // Dashboard stats
-  const totalRevenue = orders.reduce((sum, o) => sum + o.total, 0);
+  const totalRevenue = orders.reduce((sum, o) => sum + (o.totalAmount || 0), 0);
   const avgRating = books.length ? (books.reduce((s, b) => s + b.rating, 0) / books.length).toFixed(1) : '—';
   const inStockCount = books.filter(b => b.inStock).length;
 
@@ -143,26 +163,87 @@ export default function AdminPage() {
                 <h3 className="font-serif font-black text-sm text-text-dark uppercase tracking-wider">Recent Orders</h3>
               </div>
               <div className="divide-y divide-border-warm/40">
-                {orders.slice(0, 5).map(order => (
-                  <div key={order.id} className="px-6 py-4 flex items-center justify-between">
-                    <div>
-                      <p className="font-serif font-bold text-sm text-text-dark">{order.id}</p>
-                      <p className="text-[11px] text-text-muted mt-0.5">
-                        {new Date(order.date).toLocaleDateString()} · {order.items.length} item{order.items.length !== 1 ? 's' : ''}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-4">
-                      <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full border uppercase tracking-wider ${order.status === 'Delivered' ? 'text-emerald-700 bg-emerald-50 border-emerald-200' :
+                {orders.slice(0, 5).map(order => {
+                  const isOpen = expandedOrderId === order.id;
+                  const statusLabel = typeof order.status === 'number' ? (STATUS_LABELS[order.status] || 'Unknown') : (order.status || 'Pending');
+                  const statusStyle = typeof order.status === 'number' ? (STATUS_STYLES[order.status] ?? 'text-text-muted bg-cream-dark border-border-warm') : (
+                      order.status === 'Delivered' ? 'text-emerald-700 bg-emerald-50 border-emerald-200' :
                           order.status === 'Shipped' ? 'text-blue-700 bg-blue-50 border-blue-200' :
-                            order.status === 'Pending' ? 'text-amber-700 bg-amber-50 border-amber-200' :
-                              'text-red-600 bg-red-50 border-red-200'
-                        }`}>
-                        {order.status}
-                      </span>
-                      <span className="font-serif font-black text-sm text-text-dark">${order.total.toFixed(2)}</span>
-                    </div>
-                  </div>
-                ))}
+                              order.status === 'Pending' ? 'text-amber-700 bg-amber-50 border-amber-200' :
+                                  'text-red-600 bg-red-50 border-red-200'
+                  );
+
+                  return (
+                      <div
+                          key={order.id}
+                          className="bg-white border-b border-border-warm last:border-b-0 overflow-hidden transition-all duration-200"
+                      >
+                        <button
+                            onClick={() => setExpandedOrderId(isOpen ? null : order.id)}
+                            className="w-full px-6 py-4 flex items-center justify-between hover:bg-cream-dark/20 transition-colors cursor-pointer text-left"
+                        >
+                          <div>
+                            <p className="font-serif font-bold text-xs sm:text-sm text-text-dark">Order #{order.id.slice(0, 8)}...</p>
+                            <p className="text-[11px] text-text-muted mt-0.5">
+                              {new Date(order.createdAt || order.date).toLocaleDateString()} · {order.items?.length || 0} item{(order.items?.length || 0) !== 1 ? 's' : ''}
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-4">
+                            <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full border uppercase tracking-wider ${statusStyle}`}>
+                              {statusLabel}
+                            </span>
+                            <span className="font-serif font-black text-sm text-text-dark">
+                              ${(order.totalAmount ?? order.total ?? 0).toFixed(2)}
+                            </span>
+                            {isOpen ? (
+                                <ChevronUp className="w-4 h-4 text-text-muted shrink-0" />
+                            ) : (
+                                <ChevronDown className="w-4 h-4 text-text-muted shrink-0" />
+                            )}
+                          </div>
+                        </button>
+
+                        {/* Order Detail Section */}
+                        {isOpen && (
+                            <div className="border-t border-border-warm px-6 pb-5 pt-4 space-y-4 bg-cream-bg/20 animate-in fade-in slide-in-from-top-2 duration-200">
+                              {/* Order items */}
+                              <div className="space-y-3">
+                                {order.items?.map((item: any) => (
+                                    <div key={item.id} className="flex items-center gap-4">
+                                      <div className="relative w-10 h-14 rounded-lg overflow-hidden border border-border-warm bg-cream-dark shrink-0 shadow-sm">
+                                        <img
+                                            src={item.bookCoverImageUrl || item.book?.coverImageUrl || 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?q=80&w=150'}
+                                            alt={item.bookTitle || item.book?.title}
+                                            className="w-full h-full object-cover"
+                                        />
+                                      </div>
+                                      <div className="flex-1 min-w-0">
+                                        <p className="font-serif font-bold text-xs sm:text-sm text-text-dark truncate">
+                                          {item.bookTitle || item.book?.title}
+                                        </p>
+                                        <p className="text-[10px] text-text-muted mt-0.5">{item.bookAuthor || item.book?.author}</p>
+                                      </div>
+                                      <div className="text-right shrink-0 text-xs font-bold text-text-dark">
+                                        ${(item.subtotal ?? ((item.book?.price ?? 0) * item.quantity)).toFixed(2)}
+                                        <p className="text-[10px] text-text-muted mt-0.5">
+                                          ${(item.unitPrice ?? item.book?.price ?? 0).toFixed(2)} × {item.quantity}
+                                        </p>
+                                      </div>
+                                    </div>
+                                ))}
+                              </div>
+
+                              {/* Order meta details */}
+                              <div className="pt-3 border-t border-border-warm/60 space-y-1.5 text-xs text-text-muted">
+                                <p><span className="font-bold text-text-dark">Shipping Address:</span> {order.shippingAddress || 'N/A'}</p>
+                                <p><span className="font-bold text-text-dark">Payment Method:</span> {order.paymentMethod === 'COD' ? 'Cash on Delivery (COD)' : 'Credit Card (Stripe)'}</p>
+                                {order.paymentRef && <p><span className="font-bold text-text-dark">Payment Ref:</span> {order.paymentRef}</p>}
+                              </div>
+                            </div>
+                        )}
+                      </div>
+                  );
+                })}
               </div>
             </div>
 

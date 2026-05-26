@@ -186,7 +186,8 @@ export default function CartDrawer({isOpen, onClose}: CartDrawerProps) {
                             <div key={item.book.id} className="flex gap-4 pb-6 border-b border-border-light last:border-b-0 last:pb-0">
                               <div className="relative w-16 h-24 bg-cream-dark rounded-md overflow-hidden shadow-xs shrink-0 border border-border-warm">
                                 <Image
-                                    src={item.book.coverImageUrl || item.book.coverImage}
+                                    unoptimized
+                                    src={item.book.coverImageUrl}
                                     alt={item.book.title}
                                     fill
                                     sizes="64px"

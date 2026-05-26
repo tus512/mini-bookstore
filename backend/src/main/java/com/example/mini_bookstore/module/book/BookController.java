@@ -22,9 +22,10 @@ public class BookController {
   public ResponseEntity<PageResponse<BookResponseDto>> getBooks(
       @RequestParam(required = false) String search,
       @RequestParam(required = false) UUID categoryId,
+      @RequestParam(required = false) java.util.List<UUID> ids,
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "10") int size) {
-    return ResponseEntity.ok(bookService.getBooks(search, categoryId, page, size));
+    return ResponseEntity.ok(bookService.getBooks(search, categoryId, ids, page, size));
   }
 
   @GetMapping("/{id}")

@@ -24,7 +24,26 @@ public class BookService {
   private final BookRepository bookRepository;
   private final CategoryRepository categoryRepository;
 
-  public PageResponse<BookResponseDto> getBooks(String search, UUID categoryId, int page, int size) {
+  public PageResponse<BookResponseDto> getBooks(String search, UUID categoryId, List<UUID> ids, int page, int size) {
+    if (ids != null && !ids.isEmpty()) {
+      List<Book> books = bookRepository.findAllById(ids).stream()
+          .filter(b -> b.getDeletedAt() == null)
+          .collect(Collectors.toList());
+
+      List<BookResponseDto> content = books.stream()
+          .map(this::mapToDto)
+          .collect(Collectors.toList());
+
+      return PageResponse.<BookResponseDto>builder()
+          .content(content)
+          .page(0)
+          .size(content.size())
+          .totalElements(content.size())
+          .totalPages(1)
+          .last(true)
+          .build();
+    }
+
     Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
     Page<Book> bookPage;
 

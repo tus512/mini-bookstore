@@ -4,12 +4,11 @@ import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ShoppingCart, Heart, Star } from 'lucide-react';
-import { Book } from '@/lib/mockData';
 import { useBookstoreStore } from '@/lib/store';
 import toast from 'react-hot-toast';
 
 interface BookCardProps {
-  book: Book;
+  book: any;
 }
 
 export default function BookCard({ book }: BookCardProps) {
@@ -19,7 +18,7 @@ export default function BookCard({ book }: BookCardProps) {
   // Default ratings and reviews counts for dynamically seeded books
   const rating = book.rating !== undefined && book.rating !== null ? book.rating : 4.5;
   const reviewsCount = book.reviewsCount !== undefined && book.reviewsCount !== null ? book.reviewsCount : 12;
-  const coverUrl = book.coverImageUrl || book.coverImage || 'https://images.unsplash.com/photo-1543002588-bfa74002ed7e?q=80&w=600&auto=format&fit=crop';
+  const coverUrl = book.coverImageUrl;
   const price = parseFloat(book.price as any) || 0.00;
 
   const handleAddToCart = (e: React.MouseEvent) => {
@@ -64,7 +63,8 @@ export default function BookCard({ book }: BookCardProps) {
 
           {/* Book Image */}
           <div className="relative w-full h-full rounded-md overflow-hidden shadow-sm group-hover:scale-[1.03] transition-transform duration-500 ease-out">
-            <Image 
+            <Image
+              unoptimized
               src={coverUrl} 
               alt={book.title}
               fill

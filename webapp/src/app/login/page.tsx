@@ -89,6 +89,7 @@ export default function LoginPage() {
         {/* Left Side: Cozy Cozy Coffee & Book Image (Matching the mockup!) */}
         <div className="relative hidden md:block w-full h-full bg-cream-dark">
           <Image
+            unoptimized
             src="https://images.unsplash.com/photo-1543002588-bfa74002ed7e?q=80&w=800&auto=format&fit=crop"
             alt="Warm coffee cup with cozy reading books and dry flowers"
             fill

@@ -1,9 +1,14 @@
 import {create} from 'zustand';
 import {persist} from 'zustand/middleware';
-import {MOCK_BOOKS, CATEGORIES} from './mockData';
+import apiClient from '@/lib/apiClient';
 
 export interface CartItem {
   book: any;
+  quantity: number;
+}
+
+export interface PersistedCartItem {
+  bookId: string;
   quantity: number;
 }
 
@@ -16,22 +21,17 @@ export interface UserProfile {
   role?: string;
 }
 
-export interface OrderItem {
-  id: string;
-  date: string;
-  status: 'Pending' | 'Shipped' | 'Delivered' | 'Cancelled';
-  items: CartItem[];
-  total: number;
-}
-
 interface BookstoreState {
-  // Client states
+  // Client persistent IDs
+  cartIds: PersistedCartItem[];
+  wishlistIds: string[];
+
+  // Client states (runtime-only, not persisted)
   books: any[];
   categories: any[];
   cart: CartItem[];
   wishlist: any[];
   user: UserProfile | null;
-  orders: OrderItem[];
 
   // Actions
   addToCart: (book: any, quantity?: number) => void;
@@ -45,60 +45,57 @@ interface BookstoreState {
   login: (userData: any) => void;
   logout: () => void;
 
+  // Sync actions to resolve stale localstorage data with the backend
+  syncUserProfile: () => Promise<void>;
+  syncCartAndWishlist: () => Promise<void>;
 }
-
-// Initial mock orders to enrich the user's purchase history on first load
-const INITIAL_ORDERS = (): OrderItem[] => [
-  {
-    id: 'ORD-89304',
-    date: '2026-05-12',
-    status: 'Delivered',
-    items: [
-      {book: MOCK_BOOKS[0], quantity: 1}, // Birds Gonna Be Happy ($45.00)
-      {book: MOCK_BOOKS[1], quantity: 1}  // Life Of The Wild ($38.00)
-    ],
-    total: 83.00
-  },
-  {
-    id: 'ORD-72419',
-    date: '2026-05-20',
-    status: 'Shipped',
-    items: [
-      {book: MOCK_BOOKS[3], quantity: 2}  // Simple Way Of Peace Life ($25.00 * 2)
-    ],
-    total: 50.00
-  }
-];
 
 export const useBookstoreStore = create<BookstoreState>()(
     persist(
         (set, get) => ({
-          books: MOCK_BOOKS,
-          categories: CATEGORIES,
+          cartIds: [],
+          wishlistIds: [],
+
+          books: [],
+          categories: [],
           cart: [],
           wishlist: [],
           user: null,
-          orders: INITIAL_ORDERS(),
 
           addToCart: (book, quantity = 1) => {
             set((state) => {
-              const existingItem = state.cart.find((item) => item.book.id === book.id);
-              if (existingItem) {
-                return {
-                  cart: state.cart.map((item) =>
-                      item.book.id === book.id
-                          ? {...item, quantity: item.quantity + quantity}
-                          : item
-                  ),
-                };
+              // 1. Update persisted IDs
+              let newCartIds = [...state.cartIds];
+              const existingId = newCartIds.find((x) => x.bookId === book.id);
+              if (existingId) {
+                newCartIds = newCartIds.map((x) =>
+                    x.bookId === book.id ? {...x, quantity: x.quantity + quantity} : x
+                );
+              } else {
+                newCartIds.push({bookId: book.id, quantity});
               }
-              return {cart: [...state.cart, {book, quantity}]};
+
+              // 2. Update runtime state
+              let newCart = [...state.cart];
+              const existingCartItem = newCart.find((item) => item.book.id === book.id);
+              if (existingCartItem) {
+                newCart = newCart.map((item) =>
+                    item.book.id === book.id
+                        ? {...item, quantity: item.quantity + quantity}
+                        : item
+                );
+              } else {
+                newCart.push({book, quantity});
+              }
+
+              return {cartIds: newCartIds, cart: newCart};
             });
           },
 
           removeFromCart: (bookId) => {
             set((state) => ({
-              cart: state.cart.filter((item) => item.book.id !== bookId),
+              cartIds: state.cartIds.filter((x) => x.bookId !== bookId),
+              cart: state.cart.filter((item) => item.book.id !== bookId)
             }));
           },
 
@@ -108,28 +105,35 @@ export const useBookstoreStore = create<BookstoreState>()(
               return;
             }
             set((state) => ({
+              cartIds: state.cartIds.map((x) =>
+                  x.bookId === bookId ? {...x, quantity} : x
+              ),
               cart: state.cart.map((item) =>
                   item.book.id === bookId ? {...item, quantity} : item
-              ),
+              )
             }));
           },
 
-          clearCart: () => set({cart: []}),
+          clearCart: () => set({cartIds: [], cart: []}),
 
           toggleWishlist: (book) => {
             set((state) => {
-              const exists = state.wishlist.some((item) => item.id === book.id);
+              const exists = state.wishlistIds.includes(book.id);
               if (exists) {
                 return {
-                  wishlist: state.wishlist.filter((item) => item.id !== book.id),
+                  wishlistIds: state.wishlistIds.filter((id) => id !== book.id),
+                  wishlist: state.wishlist.filter((item) => item.id !== book.id)
                 };
               }
-              return {wishlist: [...state.wishlist, book]};
+              return {
+                wishlistIds: [...state.wishlistIds, book.id],
+                wishlist: [...state.wishlist, book]
+              };
             });
           },
 
           isInWishlist: (bookId) => {
-            return get().wishlist.some((item) => item.id === bookId);
+            return get().wishlistIds.includes(bookId);
           },
 
           login: (userData: any) => {
@@ -149,9 +153,79 @@ export const useBookstoreStore = create<BookstoreState>()(
             set({user: null});
           },
 
+          syncUserProfile: async () => {
+            if (typeof window === 'undefined') return;
+            const token = localStorage.getItem('auth_token');
+            if (!token) {
+              set({user: null});
+              return;
+            }
+            try {
+              const userRes = await apiClient.get('/users/me');
+              get().login(userRes.data);
+            } catch (err: any) {
+              console.error('Failed to sync user profile:', err);
+              if (err.response?.status === 401 || err.response?.status === 403) {
+                localStorage.removeItem('auth_token');
+                set({user: null});
+              }
+            }
+          },
+
+          syncCartAndWishlist: async () => {
+            const state = get();
+            const cartIds = state.cartIds;
+            const wishlistIds = state.wishlistIds;
+
+            if (cartIds.length === 0 && wishlistIds.length === 0) {
+              set({cart: [], wishlist: []});
+              return;
+            }
+
+            try {
+              // Merge all unique IDs to fetch them at once
+              const allIds = Array.from(new Set([
+                ...cartIds.map(x => x.bookId),
+                ...wishlistIds
+              ]));
+
+              const res = await apiClient.get('/books', {
+                params: {
+                  ids: allIds.join(','),
+                  size: 100
+                }
+              });
+
+              const fetchedBooks = res.data.content || [];
+
+              // Map resolved cart
+              const resolvedCart = cartIds.map(item => {
+                const book = fetchedBooks.find((b: any) => b.id === item.bookId);
+                return book ? { book, quantity: item.quantity } : null;
+              }).filter((item): item is CartItem => item !== null);
+
+              // Map resolved wishlist
+              const resolvedWishlist = wishlistIds.map(id => {
+                return fetchedBooks.find((b: any) => b.id === id) || null;
+              }).filter((book): book is any => book !== null);
+
+              set({
+                cart: resolvedCart,
+                wishlist: resolvedWishlist
+              });
+            } catch (err) {
+              console.error('Failed to sync cart and wishlist items in bulk:', err);
+            }
+          }
+
         }),
         {
           name: 'bookstore-storage-v2',
+          partialize: (state) => ({
+            cartIds: state.cartIds,
+            wishlistIds: state.wishlistIds,
+            user: state.user
+          })
         }
     )
 );

@@ -92,11 +92,6 @@ function ProfileContent() {
                 {wishlist.length}
               </span>
             )}
-            {id === 'orders' && (
-              <span className="ml-0.5 bg-cream-dark border border-border-warm text-text-muted text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center">
-                {useBookstoreStore.getState().orders.length}
-              </span>
-            )}
           </button>
         ))}
       </div>
@@ -120,7 +115,7 @@ function ProfileContent() {
                 {wishlist.map(book => (
                   <Link key={book.id} href={`/book/${book.id}`} className="group block bg-white border border-border-warm rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all hover:-translate-y-0.5 duration-200">
                     <div className="relative aspect-[3/4] bg-cream-dark overflow-hidden">
-                      <img src={book.coverImage} alt={book.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                      <img src={book.coverImageUrl} alt={book.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                     </div>
                     <div className="p-3 space-y-1">
                       <p className="font-serif font-bold text-xs text-text-dark line-clamp-2 leading-snug">{book.title}</p>

@@ -24,7 +24,7 @@ export default function BookDetailPage({params}: { params: Promise<{ id: string 
   });
 
   const wishlisted = book ? isInWishlist(book.id) : false;
-  const coverUrl = book?.coverImageUrl || book?.coverImage || 'https://images.unsplash.com/photo-1543002588-bfa74002ed7e?q=80&w=600&auto=format&fit=crop';
+  const coverUrl = book?.coverImageUrl;
   const price = book ? parseFloat(book.price) : 0;
   const rating = book?.rating ?? 4.5;
   const reviewsCount = book?.reviewsCount ?? 0;
@@ -105,6 +105,7 @@ export default function BookDetailPage({params}: { params: Promise<{ id: string 
               <div className="absolute top-0 left-3 bottom-0 w-[1px] bg-white/20 z-10"/>
               <div className="relative w-full h-full rounded-lg overflow-hidden shadow-sm">
                 <Image
+                    unoptimized
                     src={coverUrl}
                     alt={book.title}
                     fill priority

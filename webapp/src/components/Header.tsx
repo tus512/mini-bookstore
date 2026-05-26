@@ -1,6 +1,6 @@
 'use client';
 
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import Link from 'next/link';
 import {usePathname} from 'next/navigation';
 import {Search, ShoppingBag, Heart, User, BookOpen, Menu, X} from 'lucide-react';
@@ -10,10 +10,16 @@ import UserMenu from './UserMenu';
 
 export default function Header() {
   const pathname = usePathname();
-  const {cart, wishlist, user} = useBookstoreStore();
+  const {cart, wishlist, user, syncUserProfile, syncCartAndWishlist} = useBookstoreStore();
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+
+  // Sync stale persistent store data with the database on mount
+  useEffect(() => {
+    syncUserProfile();
+    syncCartAndWishlist();
+  }, [syncUserProfile, syncCartAndWishlist]);
 
   const cartItemsCount = cart.reduce((sum, item) => sum + item.quantity, 0);
   const wishlistCount = wishlist.length;

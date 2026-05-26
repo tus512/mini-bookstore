@@ -151,7 +151,8 @@ export default function HomePage() {
 
                         <div className="relative w-full h-full rounded-lg overflow-hidden">
                           <Image
-                              src={currentHeroBook.coverImageUrl || currentHeroBook.coverImage || 'https://images.unsplash.com/photo-1543002588-bfa74002ed7e?q=80&w=600&auto=format&fit=crop'}
+                              unoptimized
+                              src={currentHeroBook.coverImageUrl}
                               alt={currentHeroBook.title}
                               fill
                               priority
@@ -286,6 +287,7 @@ export default function HomePage() {
               {/* CTA Right Column Photo */}
               <div className="relative h-[320px] md:h-full min-h-[360px] w-full self-stretch bg-cream-dark">
                 <Image
+                    unoptimized
                     src="https://images.unsplash.com/photo-1506880018603-83d5b814b5a6?q=80&w=800&auto=format&fit=crop"
                     alt="Cozy library shelf reading space"
                     fill
