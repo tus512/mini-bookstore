@@ -1,13 +1,3 @@
-export interface Review {
-  id: string;
-  userName: string;
-  avatar: string;
-  rating: number;
-  date: string;
-  comment: string;
-  verified: boolean;
-}
-
 export interface Book {
   id: string;
   title: string;
@@ -17,37 +7,34 @@ export interface Book {
   rating: number;
   reviewsCount: number;
   coverImage: string;
+  coverImageUrl?: string;
   category: string;
+  categoryId?: string;
   description: string;
-  publishedDate: string;
-  publisher: string;
-  language: string;
-  pages: number;
-  isbn: string;
-  dimensions: string;
-  inStock: boolean;
-  featured: boolean;
-  isNewRelease: boolean;
-  reviews: Review[];
+  publishedDate?: string;
+  publisher?: string;
+  language?: string;
+  pages?: number;
+  isbn?: string;
+  dimensions?: string;
+  inStock?: boolean;
+  stockQuantity?: number;
+  status?: number;
+  featured?: boolean;
+  isNewRelease?: boolean;
+  reviews?: any[];
 }
 
-export interface Category {
-  id: string;
-  name: string;
-  count: number;
-  iconName: string;
-}
-
-export const CATEGORIES: Category[] = [
-  { id: 'fiction', name: 'Fiction', count: 120, iconName: 'Book' },
-  { id: 'non-fiction', name: 'Non-Fiction', count: 80, iconName: 'FileText' },
-  { id: 'biography', name: 'Biography', count: 60, iconName: 'User' },
-  { id: 'self-help', name: 'Self-help', count: 90, iconName: 'Sparkles' },
-  { id: 'travel', name: 'Travel', count: 70, iconName: 'Compass' },
-  { id: 'children', name: 'Children', count: 50, iconName: 'Baby' }
+export const CATEGORIES: any[] = [
+  {id: 'fiction', name: 'Fiction', count: 120, iconName: 'Book'},
+  {id: 'non-fiction', name: 'Non-Fiction', count: 80, iconName: 'FileText'},
+  {id: 'biography', name: 'Biography', count: 60, iconName: 'User'},
+  {id: 'self-help', name: 'Self-help', count: 90, iconName: 'Sparkles'},
+  {id: 'travel', name: 'Travel', count: 70, iconName: 'Compass'},
+  {id: 'children', name: 'Children', count: 50, iconName: 'Baby'}
 ];
 
-export const MOCK_REVIEWS: Review[] = [
+export const MOCK_REVIEWS: any[] = [
   {
     id: 'rev-1',
     userName: 'Tom Johnson',
@@ -77,7 +64,7 @@ export const MOCK_REVIEWS: Review[] = [
   }
 ];
 
-export const MOCK_BOOKS: Book[] = [
+export const MOCK_BOOKS: any[] = [
   {
     id: 'birds-gonna-be-happy',
     title: 'Birds Gonna Be Happy',

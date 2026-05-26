@@ -17,34 +17,34 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class JwtFilter extends OncePerRequestFilter {
 
-    private final JwtUtil jwtUtil;
+  private final JwtUtil jwtUtil;
 
-    @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
-            throws ServletException, IOException {
-        try {
-            String jwt = parseJwt(request);
-            if (jwt != null) {
-                Claims claims = jwtUtil.parseClaims(jwt);
-                
-                // Store user info in request attributes for controllers to use
-                request.setAttribute("userId", UUID.fromString(claims.getSubject()));
-                request.setAttribute("email", claims.get("email", String.class));
-                request.setAttribute("role", claims.get("role", String.class));
-            }
-        } catch (Exception e) {
-            // Token invalid or expired, continue without setting attributes
-        }
+  @Override
+  protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+      throws ServletException, IOException {
+    try {
+      String jwt = parseJwt(request);
+      if (jwt != null) {
+        Claims claims = jwtUtil.parseClaims(jwt);
 
-        filterChain.doFilter(request, response);
+        // Store user info in request attributes for controllers to use
+        request.setAttribute("userId", UUID.fromString(claims.getSubject()));
+        request.setAttribute("email", claims.get("email", String.class));
+        request.setAttribute("role", claims.get("role", String.class));
+      }
+    } catch (Exception e) {
+      // Token invalid or expired, continue without setting attributes
     }
 
-    private String parseJwt(HttpServletRequest request) {
-        String headerAuth = request.getHeader("Authorization");
+    filterChain.doFilter(request, response);
+  }
 
-        if (StringUtils.hasText(headerAuth) && headerAuth.startsWith("Bearer ")) {
-            return headerAuth.substring(7);
-        }
-        return null;
+  private String parseJwt(HttpServletRequest request) {
+    String headerAuth = request.getHeader("Authorization");
+
+    if (StringUtils.hasText(headerAuth) && headerAuth.startsWith("Bearer ")) {
+      return headerAuth.substring(7);
     }
+    return null;
+  }
 }

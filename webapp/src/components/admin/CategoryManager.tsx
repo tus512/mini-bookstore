@@ -11,8 +11,6 @@ export interface Category {
   slug: string;
 }
 
-const ICONS = ['Book', 'FileText', 'User', 'Sparkles', 'Compass', 'Baby', 'Heart', 'Star', 'Tag', 'Globe'];
-
 const INPUT = 'w-full bg-cream-bg border border-border-warm rounded-lg px-3.5 py-2.5 text-xs font-medium text-text-dark outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 transition-all';
 const LABEL = 'text-[10px] font-bold text-text-dark uppercase tracking-widest';
 

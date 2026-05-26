@@ -13,10 +13,10 @@ import javax.validation.constraints.NotBlank;
 @AllArgsConstructor
 @Builder
 public class LoginRequestDto {
-    @NotBlank
-    @Email
-    private String email;
-
-    @NotBlank
-    private String password;
+  @NotBlank
+  @Email
+  private String email;
+  
+  @NotBlank
+  private String password;
 }

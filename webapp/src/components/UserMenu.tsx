@@ -55,7 +55,7 @@ export default function UserMenu({ onClose }: UserMenuProps) {
         <div className="min-w-0">
           <p className="font-serif font-black text-sm text-text-dark truncate">{user.name}</p>
           <p className="text-[10px] text-text-muted truncate">{user.email}</p>
-          {user.isAdmin && (
+          {user.role === 'ADMIN' && (
             <span className="inline-flex items-center gap-1 text-[9px] font-bold text-primary bg-primary-light px-1.5 py-0.5 rounded-sm mt-0.5 uppercase tracking-wider border border-border-warm">
               <ShieldCheck className="w-2.5 h-2.5" /> Admin
             </span>
@@ -89,7 +89,7 @@ export default function UserMenu({ onClose }: UserMenuProps) {
           <ChevronRight className="w-3.5 h-3.5 opacity-40 group-hover:opacity-100 transition-opacity" />
         </Link>
 
-        {user.isAdmin && (
+        {user.role === 'ADMIN' && (
           <>
             <div className="mx-4 my-1.5 border-t border-border-warm" />
             <Link

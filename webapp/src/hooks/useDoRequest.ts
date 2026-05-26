@@ -1,83 +1,98 @@
-import { useState, useCallback, useEffect } from 'react';
+import {useState, useCallback, useEffect, useRef} from 'react';
 import apiClient from '@/lib/apiClient';
-import { AxiosRequestConfig } from 'axios';
+import {AxiosRequestConfig} from 'axios';
 
-interface UseDoRequestOptions<TData = any, TVariables = any> {
+interface UseDoRequestOptions<TData = any> {
   url: string;
   method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
   headers?: Record<string, string>;
   isFetchOnLoad?: boolean;
   initData?: TData;
-  formParams?: TVariables; // Default parameters/body
-  onSuccess?: (data: TData, variables?: TVariables) => void;
-  onError?: (error: Error, variables?: TVariables) => void;
+  params?: Record<string, any>;    // Default query params (GET)
+  formParams?: any;                 // Default body params (POST/PUT)
+  onSuccess?: (data: TData) => void;
+  onError?: (error: Error) => void;
 }
 
-export function useDoRequest<TData = any, TVariables = any>(options: UseDoRequestOptions<TData, TVariables>) {
+interface DoRequestArg {
+  params?: Record<string, any>;  // Override query params
+  data?: any;                     // Override body
+}
+
+export function useDoRequest<TData = any>(options: UseDoRequestOptions<TData>) {
   const {
     url,
-    method = 'GET', // Default to GET
-    headers,
+    method = 'GET',
     isFetchOnLoad = false,
     initData,
-    formParams,
-    onSuccess,
-    onError,
   } = options;
 
   const [data, setData] = useState<TData | undefined>(initData);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
-  const doRequest = useCallback(async (params?: TVariables) => {
+  // Keep options in a ref to prevent infinite rendering loops from inline objects/callbacks
+  const optionsRef = useRef(options);
+  optionsRef.current = options;
+
+  const doRequest = useCallback(async (arg?: DoRequestArg | any) => {
     try {
       setLoading(true);
       setError(null);
-      
-      const requestData = params !== undefined ? params : formParams;
-      
+
+      const currentOptions = optionsRef.current;
+      const currentParams = currentOptions.params;
+      const currentFormParams = currentOptions.formParams;
+      const currentMethod = currentOptions.method || 'GET';
+
       const config: AxiosRequestConfig = {
-        url,
-        method,
-        headers,
+        url: currentOptions.url,
+        method: currentMethod,
+        headers: currentOptions.headers,
       };
 
-      // Assign to data or params depending on HTTP method
-      if (method === 'GET' || method === 'DELETE') {
-        config.params = requestData;
+      // Determine query params and body from the argument
+      if (arg && typeof arg === 'object' && ('params' in arg || 'data' in arg)) {
+        // Structured call: doRequest({ params: {...}, data: {...} })
+        if (currentMethod === 'GET' || currentMethod === 'DELETE') {
+          config.params = {...currentParams, ...arg.params};
+        } else {
+          config.data = arg.data !== undefined ? arg.data : currentFormParams;
+          config.params = arg.params;
+        }
       } else {
-        config.data = requestData;
+        // Legacy call: doRequest(body) or doRequest(queryParams)
+        if (currentMethod === 'GET' || currentMethod === 'DELETE') {
+          config.params = arg !== undefined ? arg : currentParams;
+        } else {
+          config.data = arg !== undefined ? arg : currentFormParams;
+          config.params = currentParams;
+        }
       }
 
       const response = await apiClient.request<TData>(config);
-      
+
       setData(response.data);
-      if (onSuccess) {
-        onSuccess(response.data, requestData);
+      if (currentOptions.onSuccess) {
+        currentOptions.onSuccess(response.data);
       }
       return response.data;
     } catch (err: any) {
       setError(err);
       console.error(`Request to ${url} failed. ${err.message}`);
-      if (onError) {
-        onError(err, params !== undefined ? params : formParams);
+      if (optionsRef.current.onError) {
+        optionsRef.current.onError(err);
       }
     } finally {
       setLoading(false);
     }
-  }, [url, method, headers, formParams, onSuccess, onError]);
+  }, [url]);
 
-  // Execute on mount if flag is set
   useEffect(() => {
     if (isFetchOnLoad) {
       doRequest();
     }
   }, [isFetchOnLoad, doRequest]);
 
-  return {
-    data,
-    loading,
-    error,
-    doRequest,
-  };
+  return {data, loading, error, doRequest};
 }

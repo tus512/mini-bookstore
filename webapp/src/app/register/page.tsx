@@ -30,7 +30,7 @@ export default function RegisterPage() {
       localStorage.setItem('auth_token', data.token);
 
       try {
-        const userRes = await apiClient.get('/auth/me');
+        const userRes = await apiClient.get('/users/me');
         const userData = userRes.data;
 
         login(userData);

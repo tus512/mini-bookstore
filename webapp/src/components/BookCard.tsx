@@ -16,6 +16,12 @@ export default function BookCard({ book }: BookCardProps) {
   const { addToCart, toggleWishlist, isInWishlist } = useBookstoreStore();
   const wishlisted = isInWishlist(book.id);
 
+  // Default ratings and reviews counts for dynamically seeded books
+  const rating = book.rating !== undefined && book.rating !== null ? book.rating : 4.5;
+  const reviewsCount = book.reviewsCount !== undefined && book.reviewsCount !== null ? book.reviewsCount : 12;
+  const coverUrl = book.coverImageUrl || book.coverImage || 'https://images.unsplash.com/photo-1543002588-bfa74002ed7e?q=80&w=600&auto=format&fit=crop';
+  const price = parseFloat(book.price as any) || 0.00;
+
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -59,7 +65,7 @@ export default function BookCard({ book }: BookCardProps) {
           {/* Book Image */}
           <div className="relative w-full h-full rounded-md overflow-hidden shadow-sm group-hover:scale-[1.03] transition-transform duration-500 ease-out">
             <Image 
-              src={book.coverImage} 
+              src={coverUrl} 
               alt={book.title}
               fill
               sizes="(max-width: 768px) 50vw, (max-width: 1200px) 25vw, 20vw"
@@ -93,11 +99,11 @@ export default function BookCard({ book }: BookCardProps) {
               {[...Array(5)].map((_, i) => (
                 <Star 
                   key={i} 
-                  className={`w-3 h-3 ${i < Math.floor(book.rating) ? 'fill-amber-500' : 'text-amber-200'}`} 
+                  className={`w-3 h-3 ${i < Math.floor(rating) ? 'fill-amber-500' : 'text-amber-200'}`} 
                 />
               ))}
             </div>
-            <span className="text-[10px] text-text-muted font-medium">({book.reviewsCount})</span>
+            <span className="text-[10px] text-text-muted font-medium">({reviewsCount})</span>
           </div>
 
           {/* Title & Author */}
@@ -109,7 +115,7 @@ export default function BookCard({ book }: BookCardProps) {
           {/* Price & Add To Cart Button */}
           <div className="mt-auto pt-3 flex items-center justify-between">
             <span className="font-serif font-black text-base text-text-dark">
-              ${book.price.toFixed(2)}
+              ${price.toFixed(2)}
             </span>
             <button
               onClick={handleAddToCart}

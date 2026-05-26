@@ -14,11 +14,11 @@ import java.util.UUID;
 @AllArgsConstructor
 @Builder
 public class UserResponseDto {
-    private UUID id;
-    private String email;
-    private String fullName;
-    private String phone;
-    private Role role;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
+  private UUID id;
+  private String email;
+  private String fullName;
+  private String phone;
+  private Role role;
+  private LocalDateTime createdAt;
+  private LocalDateTime updatedAt;
 }

@@ -17,48 +17,47 @@ import java.util.UUID;
 @AllArgsConstructor
 @Builder
 public class Category {
+  @Id
+  @Column(name = "id", columnDefinition = "BINARY(16)", nullable = false, updatable = false)
+  @org.hibernate.annotations.Type(type = "uuid-binary")
+  private UUID id;
 
-    @Id
-    @Column(name = "id", columnDefinition = "BINARY(16)", nullable = false, updatable = false)
-    @org.hibernate.annotations.Type(type = "uuid-binary")
-    private UUID id;
+  @Column(name = "name", nullable = false, length = 100)
+  private String name;
 
-    @Column(name = "name", nullable = false, length = 100)
-    private String name;
+  @Column(name = "slug", nullable = false, unique = true, length = 200)
+  private String slug;
 
-    @Column(name = "slug", nullable = false, unique = true, length = 200)
-    private String slug;
+  @CreationTimestamp
+  @Column(name = "created_at", nullable = false, updatable = false)
+  private LocalDateTime createdAt;
 
-    @CreationTimestamp
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
+  @UpdateTimestamp
+  @Column(name = "updated_at", nullable = false)
+  private LocalDateTime updatedAt;
 
-    @UpdateTimestamp
-    @Column(name = "updated_at", nullable = false)
-    private LocalDateTime updatedAt;
+  @Column(name = "deleted_at")
+  private LocalDateTime deletedAt;
 
-    @Column(name = "deleted_at")
-    private LocalDateTime deletedAt;
+  @Override
+  public boolean equals(Object o) {
+    if (this == o)
+      return true;
+    if (!(o instanceof Category))
+      return false;
+    Category other = (Category) o;
+    return id != null && id.equals(other.id);
+  }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o)
-            return true;
-        if (!(o instanceof Category))
-            return false;
-        Category other = (Category) o;
-        return id != null && id.equals(other.id);
+  @Override
+  public int hashCode() {
+    return getClass().hashCode();
+  }
+
+  @PrePersist
+  public void prePersist() {
+    if (this.id == null) {
+      this.id = UuidCreator.getTimeOrderedEpoch();
     }
-
-    @Override
-    public int hashCode() {
-        return getClass().hashCode();
-    }
-
-    @PrePersist
-    public void prePersist() {
-        if (this.id == null) {
-            this.id = UuidCreator.getTimeOrderedEpoch();
-        }
-    }
+  }
 }
