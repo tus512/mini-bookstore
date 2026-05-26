@@ -1,0 +1,13 @@
+package com.example.mini_bookstore.module.ratelimit;
+
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
+@Target(ElementType.METHOD)
+@Retention(RetentionPolicy.RUNTIME)
+public @interface RateLimit {
+    double capacity() default 10.0;
+    double refillRate() default 2.0; // tokens per second
+}
