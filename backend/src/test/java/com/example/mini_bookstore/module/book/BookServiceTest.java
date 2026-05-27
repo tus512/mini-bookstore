@@ -49,7 +49,7 @@ public class BookServiceTest {
 
     when(bookRepository.findAllById(Arrays.asList(id1, id2))).thenReturn(Arrays.asList(book1, book2));
 
-    PageResponse<BookResponseDto> response = bookService.getBooks(null, null, Arrays.asList(id1, id2), 0, 10);
+    PageResponse<BookResponseDto> response = bookService.getBooks(null, null, Arrays.asList(id1, id2), null, null, 0, 10);
 
     assertNotNull(response);
     assertEquals(1, response.getContent().size());
@@ -58,14 +58,14 @@ public class BookServiceTest {
   }
 
   @Test
-  void testGetBooks_withSearchAndCategory_callsSearchBooksInCategory() {
+  void testGetBooks_withSearchAndCategory_callsSearchBooksWithFilters() {
     UUID categoryId = UUID.randomUUID();
     Book book = Book.builder().id(UUID.randomUUID()).title("Java Patterns").price(BigDecimal.TEN).build();
     Page<Book> bookPage = new PageImpl<>(Collections.singletonList(book));
 
-    when(bookRepository.searchBooksInCategory(eq("Java"), eq(categoryId), any(Pageable.class))).thenReturn(bookPage);
+    when(bookRepository.searchBooksWithFilters(eq("Java"), eq(categoryId), any(), any(Pageable.class))).thenReturn(bookPage);
 
-    PageResponse<BookResponseDto> response = bookService.getBooks("Java", categoryId, null, 0, 10);
+    PageResponse<BookResponseDto> response = bookService.getBooks("Java", categoryId, null, null, null, 0, 10);
 
     assertNotNull(response);
     assertEquals(1, response.getContent().size());
@@ -73,13 +73,13 @@ public class BookServiceTest {
   }
 
   @Test
-  void testGetBooks_withSearchOnly_callsSearchBooks() {
+  void testGetBooks_withSearchOnly_callsSearchBooksWithFilters() {
     Book book = Book.builder().id(UUID.randomUUID()).title("Design Patterns").price(BigDecimal.TEN).build();
     Page<Book> bookPage = new PageImpl<>(Collections.singletonList(book));
 
-    when(bookRepository.searchBooks(eq("Patterns"), any(Pageable.class))).thenReturn(bookPage);
+    when(bookRepository.searchBooksWithFilters(eq("Patterns"), any(), any(), any(Pageable.class))).thenReturn(bookPage);
 
-    PageResponse<BookResponseDto> response = bookService.getBooks("Patterns", null, null, 0, 10);
+    PageResponse<BookResponseDto> response = bookService.getBooks("Patterns", null, null, null, null, 0, 10);
 
     assertNotNull(response);
     assertEquals(1, response.getContent().size());
@@ -87,14 +87,14 @@ public class BookServiceTest {
   }
 
   @Test
-  void testGetBooks_withCategoryOnly_callsFindByCategoryId() {
+  void testGetBooks_withCategoryOnly_callsSearchBooksWithFilters() {
     UUID categoryId = UUID.randomUUID();
     Book book = Book.builder().id(UUID.randomUUID()).title("Clean Code").price(BigDecimal.TEN).build();
     Page<Book> bookPage = new PageImpl<>(Collections.singletonList(book));
 
-    when(bookRepository.findByCategoryIdAndDeletedAtIsNull(eq(categoryId), any(Pageable.class))).thenReturn(bookPage);
+    when(bookRepository.searchBooksWithFilters(any(), eq(categoryId), any(), any(Pageable.class))).thenReturn(bookPage);
 
-    PageResponse<BookResponseDto> response = bookService.getBooks(null, categoryId, null, 0, 10);
+    PageResponse<BookResponseDto> response = bookService.getBooks(null, categoryId, null, null, null, 0, 10);
 
     assertNotNull(response);
     assertEquals(1, response.getContent().size());
@@ -102,13 +102,13 @@ public class BookServiceTest {
   }
 
   @Test
-  void testGetBooks_withNoParams_callsFindByDeletedAtIsNull() {
+  void testGetBooks_withNoParams_callsSearchBooksWithFilters() {
     Book book = Book.builder().id(UUID.randomUUID()).title("Refactoring").price(BigDecimal.TEN).build();
     Page<Book> bookPage = new PageImpl<>(Collections.singletonList(book));
 
-    when(bookRepository.findByDeletedAtIsNull(any(Pageable.class))).thenReturn(bookPage);
+    when(bookRepository.searchBooksWithFilters(any(), any(), any(), any(Pageable.class))).thenReturn(bookPage);
 
-    PageResponse<BookResponseDto> response = bookService.getBooks(null, null, null, 0, 10);
+    PageResponse<BookResponseDto> response = bookService.getBooks(null, null, null, null, null, 0, 10);
 
     assertNotNull(response);
     assertEquals(1, response.getContent().size());

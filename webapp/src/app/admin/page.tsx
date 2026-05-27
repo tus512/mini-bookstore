@@ -3,16 +3,18 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ShieldCheck, BookOpen, Tag, BarChart3, ArrowLeft, Users, ShoppingBag, Star, ChevronDown, ChevronUp } from 'lucide-react';
+import { ShieldCheck, BookOpen, Tag, BarChart3, ArrowLeft, Users, ShoppingBag, Star, ChevronDown, ChevronUp, TrendingUp } from 'lucide-react';
 import { useBookstoreStore } from '@/lib/store';
 import BookManager from '@/components/admin/BookManager';
 import CategoryManager from '@/components/admin/CategoryManager';
+import SalesReport from '@/components/admin/SalesReport';
 import apiClient from '@/lib/apiClient';
 
 const TABS = [
-  { id: 'overview', label: 'Overview', icon: BarChart3 },
+  { id: 'reports', label: 'This Month Sales Reports', icon: TrendingUp },
   { id: 'books', label: 'Books', icon: BookOpen },
   { id: 'categories', label: 'Categories', icon: Tag },
+  { id: 'overview', label: 'Orders', icon: BarChart3 },
 ];
 
 const STATUS_LABELS = ['Pending', 'Confirmed', 'Shipped', 'Delivered', 'Cancelled'];
@@ -27,7 +29,7 @@ const STATUS_STYLES = [
 export default function AdminPage() {
   const router = useRouter();
   const { user, books, categories } = useBookstoreStore();
-  const [activeTab, setActiveTab] = useState('overview');
+  const [activeTab, setActiveTab] = useState('reports');
   const [orders, setOrders] = useState<any[]>([]);
   const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null);
 
@@ -76,7 +78,6 @@ export default function AdminPage() {
   const inStockCount = books.filter(b => b.inStock).length;
 
   const stats = [
-    { label: 'Total Books', value: books.length, icon: <BookOpen className="w-5 h-5 text-primary" />, color: 'bg-primary-light border-border-warm' },
     { label: 'Categories', value: categories.length, icon: <Tag className="w-5 h-5 text-purple-500" />, color: 'bg-purple-50 border-purple-200' },
     { label: 'Total Orders', value: orders.length, icon: <ShoppingBag className="w-5 h-5 text-blue-500" />, color: 'bg-blue-50 border-blue-200' },
     { label: 'Revenue', value: `$${totalRevenue.toFixed(0)}`, icon: <BarChart3 className="w-5 h-5 text-emerald-500" />, color: 'bg-emerald-50 border-emerald-200' },
@@ -121,7 +122,7 @@ export default function AdminPage() {
       </div>
 
       {/* Stat cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-8">
+      {/* <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-8">
         {stats.map(s => (
           <div key={s.label} className={`bg-white border rounded-2xl p-4 shadow-sm flex flex-col gap-3 ${s.color.split(' ')[1]}`}>
             <div className={`w-9 h-9 ${s.color.split(' ')[0]} border ${s.color.split(' ')[1]} rounded-xl flex items-center justify-center`}>
@@ -133,7 +134,7 @@ export default function AdminPage() {
             </div>
           </div>
         ))}
-      </div>
+      </div> */}
 
       {/* Tab bar */}
       <div className="flex gap-1 p-1 bg-cream-dark/40 border border-border-warm rounded-xl mb-6 w-fit">
@@ -142,8 +143,8 @@ export default function AdminPage() {
             key={id}
             onClick={() => setActiveTab(id)}
             className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${activeTab === id
-                ? 'bg-white text-primary shadow-sm border border-border-warm'
-                : 'text-text-muted hover:text-text-dark'
+              ? 'bg-white text-primary shadow-sm border border-border-warm'
+              : 'text-text-muted hover:text-text-dark'
               }`}
           >
             <Icon className="w-3.5 h-3.5" />
@@ -167,81 +168,81 @@ export default function AdminPage() {
                   const isOpen = expandedOrderId === order.id;
                   const statusLabel = typeof order.status === 'number' ? (STATUS_LABELS[order.status] || 'Unknown') : (order.status || 'Pending');
                   const statusStyle = typeof order.status === 'number' ? (STATUS_STYLES[order.status] ?? 'text-text-muted bg-cream-dark border-border-warm') : (
-                      order.status === 'Delivered' ? 'text-emerald-700 bg-emerald-50 border-emerald-200' :
-                          order.status === 'Shipped' ? 'text-blue-700 bg-blue-50 border-blue-200' :
-                              order.status === 'Pending' ? 'text-amber-700 bg-amber-50 border-amber-200' :
-                                  'text-red-600 bg-red-50 border-red-200'
+                    order.status === 'Delivered' ? 'text-emerald-700 bg-emerald-50 border-emerald-200' :
+                      order.status === 'Shipped' ? 'text-blue-700 bg-blue-50 border-blue-200' :
+                        order.status === 'Pending' ? 'text-amber-700 bg-amber-50 border-amber-200' :
+                          'text-red-600 bg-red-50 border-red-200'
                   );
 
                   return (
-                      <div
-                          key={order.id}
-                          className="bg-white border-b border-border-warm last:border-b-0 overflow-hidden transition-all duration-200"
+                    <div
+                      key={order.id}
+                      className="bg-white border-b border-border-warm last:border-b-0 overflow-hidden transition-all duration-200"
+                    >
+                      <button
+                        onClick={() => setExpandedOrderId(isOpen ? null : order.id)}
+                        className="w-full px-6 py-4 flex items-center justify-between hover:bg-cream-dark/20 transition-colors cursor-pointer text-left"
                       >
-                        <button
-                            onClick={() => setExpandedOrderId(isOpen ? null : order.id)}
-                            className="w-full px-6 py-4 flex items-center justify-between hover:bg-cream-dark/20 transition-colors cursor-pointer text-left"
-                        >
-                          <div>
-                            <p className="font-serif font-bold text-xs sm:text-sm text-text-dark">Order #{order.id.slice(0, 8)}...</p>
-                            <p className="text-[11px] text-text-muted mt-0.5">
-                              {new Date(order.createdAt || order.date).toLocaleDateString()} · {order.items?.length || 0} item{(order.items?.length || 0) !== 1 ? 's' : ''}
-                            </p>
-                          </div>
-                          <div className="flex items-center gap-4">
-                            <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full border uppercase tracking-wider ${statusStyle}`}>
-                              {statusLabel}
-                            </span>
-                            <span className="font-serif font-black text-sm text-text-dark">
-                              ${(order.totalAmount ?? order.total ?? 0).toFixed(2)}
-                            </span>
-                            {isOpen ? (
-                                <ChevronUp className="w-4 h-4 text-text-muted shrink-0" />
-                            ) : (
-                                <ChevronDown className="w-4 h-4 text-text-muted shrink-0" />
-                            )}
-                          </div>
-                        </button>
+                        <div>
+                          <p className="font-serif font-bold text-xs sm:text-sm text-text-dark">Order #{order.id.slice(0, 8)}...</p>
+                          <p className="text-[11px] text-text-muted mt-0.5">
+                            {new Date(order.createdAt || order.date).toLocaleDateString()} · {order.items?.length || 0} item{(order.items?.length || 0) !== 1 ? 's' : ''}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-4">
+                          <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full border uppercase tracking-wider ${statusStyle}`}>
+                            {statusLabel}
+                          </span>
+                          <span className="font-serif font-black text-sm text-text-dark">
+                            ${(order.totalAmount ?? order.total ?? 0).toFixed(2)}
+                          </span>
+                          {isOpen ? (
+                            <ChevronUp className="w-4 h-4 text-text-muted shrink-0" />
+                          ) : (
+                            <ChevronDown className="w-4 h-4 text-text-muted shrink-0" />
+                          )}
+                        </div>
+                      </button>
 
-                        {/* Order Detail Section */}
-                        {isOpen && (
-                            <div className="border-t border-border-warm px-6 pb-5 pt-4 space-y-4 bg-cream-bg/20 animate-in fade-in slide-in-from-top-2 duration-200">
-                              {/* Order items */}
-                              <div className="space-y-3">
-                                {order.items?.map((item: any) => (
-                                    <div key={item.id} className="flex items-center gap-4">
-                                      <div className="relative w-10 h-14 rounded-lg overflow-hidden border border-border-warm bg-cream-dark shrink-0 shadow-sm">
-                                        <img
-                                            src={item.bookCoverImageUrl || item.book?.coverImageUrl || 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?q=80&w=150'}
-                                            alt={item.bookTitle || item.book?.title}
-                                            className="w-full h-full object-cover"
-                                        />
-                                      </div>
-                                      <div className="flex-1 min-w-0">
-                                        <p className="font-serif font-bold text-xs sm:text-sm text-text-dark truncate">
-                                          {item.bookTitle || item.book?.title}
-                                        </p>
-                                        <p className="text-[10px] text-text-muted mt-0.5">{item.bookAuthor || item.book?.author}</p>
-                                      </div>
-                                      <div className="text-right shrink-0 text-xs font-bold text-text-dark">
-                                        ${(item.subtotal ?? ((item.book?.price ?? 0) * item.quantity)).toFixed(2)}
-                                        <p className="text-[10px] text-text-muted mt-0.5">
-                                          ${(item.unitPrice ?? item.book?.price ?? 0).toFixed(2)} × {item.quantity}
-                                        </p>
-                                      </div>
-                                    </div>
-                                ))}
+                      {/* Order Detail Section */}
+                      {isOpen && (
+                        <div className="border-t border-border-warm px-6 pb-5 pt-4 space-y-4 bg-cream-bg/20 animate-in fade-in slide-in-from-top-2 duration-200">
+                          {/* Order items */}
+                          <div className="space-y-3">
+                            {order.items?.map((item: any) => (
+                              <div key={item.id} className="flex items-center gap-4">
+                                <div className="relative w-10 h-14 rounded-lg overflow-hidden border border-border-warm bg-cream-dark shrink-0 shadow-sm">
+                                  <img
+                                    src={item.bookCoverImageUrl || item.book?.coverImageUrl || 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?q=80&w=150'}
+                                    alt={item.bookTitle || item.book?.title}
+                                    className="w-full h-full object-cover"
+                                  />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <p className="font-serif font-bold text-xs sm:text-sm text-text-dark truncate">
+                                    {item.bookTitle || item.book?.title}
+                                  </p>
+                                  <p className="text-[10px] text-text-muted mt-0.5">{item.bookAuthor || item.book?.author}</p>
+                                </div>
+                                <div className="text-right shrink-0 text-xs font-bold text-text-dark">
+                                  ${(item.subtotal ?? ((item.book?.price ?? 0) * item.quantity)).toFixed(2)}
+                                  <p className="text-[10px] text-text-muted mt-0.5">
+                                    ${(item.unitPrice ?? item.book?.price ?? 0).toFixed(2)} × {item.quantity}
+                                  </p>
+                                </div>
                               </div>
+                            ))}
+                          </div>
 
-                              {/* Order meta details */}
-                              <div className="pt-3 border-t border-border-warm/60 space-y-1.5 text-xs text-text-muted">
-                                <p><span className="font-bold text-text-dark">Shipping Address:</span> {order.shippingAddress || 'N/A'}</p>
-                                <p><span className="font-bold text-text-dark">Payment Method:</span> {order.paymentMethod === 'COD' ? 'Cash on Delivery (COD)' : 'Credit Card (Stripe)'}</p>
-                                {order.paymentRef && <p><span className="font-bold text-text-dark">Payment Ref:</span> {order.paymentRef}</p>}
-                              </div>
-                            </div>
-                        )}
-                      </div>
+                          {/* Order meta details */}
+                          <div className="pt-3 border-t border-border-warm/60 space-y-1.5 text-xs text-text-muted">
+                            <p><span className="font-bold text-text-dark">Shipping Address:</span> {order.shippingAddress || 'N/A'}</p>
+                            <p><span className="font-bold text-text-dark">Payment Method:</span> {order.paymentMethod === 'COD' ? 'Cash on Delivery (COD)' : 'Credit Card (Stripe)'}</p>
+                            {order.paymentRef && <p><span className="font-bold text-text-dark">Payment Ref:</span> {order.paymentRef}</p>}
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   );
                 })}
               </div>
@@ -279,6 +280,7 @@ export default function AdminPage() {
 
         {activeTab === 'books' && <BookManager />}
         {activeTab === 'categories' && <CategoryManager />}
+        {activeTab === 'reports' && <SalesReport />}
       </div>
     </div>
   );

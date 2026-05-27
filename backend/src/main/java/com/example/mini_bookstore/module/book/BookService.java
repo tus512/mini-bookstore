@@ -24,7 +24,9 @@ public class BookService {
   private final BookRepository bookRepository;
   private final CategoryRepository categoryRepository;
 
-  public PageResponse<BookResponseDto> getBooks(String search, UUID categoryId, List<UUID> ids, int page, int size) {
+
+
+  public PageResponse<BookResponseDto> getBooks(String search, UUID categoryId, List<UUID> ids, java.math.BigDecimal priceMax, String sortBy, int page, int size) {
     if (ids != null && !ids.isEmpty()) {
       List<Book> books = bookRepository.findAllById(ids).stream()
           .filter(b -> b.getDeletedAt() == null)
@@ -44,21 +46,17 @@ public class BookService {
           .build();
     }
 
-    Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
-    Page<Book> bookPage;
-
-    boolean hasSearch = StringUtils.hasText(search);
-    boolean hasCategoryId = categoryId != null;
-
-    if (hasSearch && hasCategoryId) {
-      bookPage = bookRepository.searchBooksInCategory(search, categoryId, pageable);
-    } else if (hasSearch) {
-      bookPage = bookRepository.searchBooks(search, pageable);
-    } else if (hasCategoryId) {
-      bookPage = bookRepository.findByCategoryIdAndDeletedAtIsNull(categoryId, pageable);
-    } else {
-      bookPage = bookRepository.findByDeletedAtIsNull(pageable);
+    Sort sort = Sort.by("createdAt").descending(); // default newest
+    if ("price-low".equalsIgnoreCase(sortBy)) {
+      sort = Sort.by("price").ascending();
+    } else if ("price-high".equalsIgnoreCase(sortBy)) {
+      sort = Sort.by("price").descending();
     }
+
+    Pageable pageable = PageRequest.of(page, size, sort);
+    String normalizedSearch = StringUtils.hasText(search) ? search.trim() : null;
+
+    Page<Book> bookPage = bookRepository.searchBooksWithFilters(normalizedSearch, categoryId, priceMax, pageable);
 
     List<BookResponseDto> content = bookPage.getContent().stream()
             .map(this::mapToDto)

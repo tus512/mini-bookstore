@@ -7,8 +7,11 @@ import com.example.mini_bookstore.module.order.dto.OrderItemRequestDto;
 import com.example.mini_bookstore.module.order.dto.OrderResponseDto;
 import com.example.mini_bookstore.module.user.User;
 import com.example.mini_bookstore.module.user.UserRepository;
-import com.example.mini_bookstore.infrastructure.kafka.producer.OrderEventProducer;
 import com.example.mini_bookstore.infrastructure.kafka.event.OrderSuccessEvent;
+import com.example.mini_bookstore.module.outbox.OutboxMessage;
+import com.example.mini_bookstore.module.outbox.OutboxRepository;
+import com.example.mini_bookstore.module.outbox.OutboxStatus;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -33,14 +36,14 @@ public class OrderServiceTest {
   @Mock
   private OrderItemRepository orderItemRepository;
   @Mock
-  private OrderEventRepository orderEventRepository;
+  private OutboxRepository outboxRepository;
   @Mock
   private UserRepository userRepository;
   @Mock
   private BookRepository bookRepository;
-  @Mock
-  private OrderEventProducer orderEventProducer;
 
+  private ObjectMapper objectMapper = new ObjectMapper()
+      .registerModule(new com.fasterxml.jackson.datatype.jsr310.JavaTimeModule());
   private OrderService orderService;
 
   @BeforeEach
@@ -48,15 +51,15 @@ public class OrderServiceTest {
     orderService = new OrderService(
         orderRepository,
         orderItemRepository,
-        orderEventRepository,
+        outboxRepository,
         userRepository,
         bookRepository,
-        orderEventProducer
+        objectMapper
     );
   }
 
   @Test
-  void testCreateOrder_success_deductsStockAndPublishesKafkaEvent() {
+  void testCreateOrder_success_deductsStockAndPublishesKafkaEvent() throws Exception {
     UUID userId = UUID.randomUUID();
     UUID bookId = UUID.randomUUID();
 
@@ -88,7 +91,7 @@ public class OrderServiceTest {
       return order;
     });
 
-    when(orderItemRepository.save(any(OrderItem.class))).thenAnswer(invocation -> invocation.getArgument(0));
+    when(orderItemRepository.saveAll(anyList())).thenAnswer(invocation -> invocation.getArgument(0));
 
     OrderResponseDto response = orderService.createOrder(userId, request);
 
@@ -97,16 +100,25 @@ public class OrderServiceTest {
     assertEquals("COD", response.getPaymentMethod());
     assertEquals(0, BigDecimal.valueOf(90.00).compareTo(response.getTotalAmount()));
 
-    // Verify DB log (lưu log db) is recorded
-    verify(orderEventRepository).save(any(OrderEvent.class));
+    // Verify OutboxMessage is saved in DB
+    ArgumentCaptor<OutboxMessage> outboxCaptor = ArgumentCaptor.forClass(OutboxMessage.class);
+    verify(outboxRepository).save(outboxCaptor.capture());
 
-    // Verify Kafka event was published with correct properties
-    ArgumentCaptor<OrderSuccessEvent> eventCaptor = ArgumentCaptor.forClass(OrderSuccessEvent.class);
-    verify(orderEventProducer).sendOrderSuccessMessage(eventCaptor.capture());
+    OutboxMessage sentMsg = outboxCaptor.getValue();
+    assertEquals("ORDER", sentMsg.getAggregateType());
+    assertEquals("ORDER_PLACED", sentMsg.getEventType());
+    assertEquals("order-success", sentMsg.getTopic());
+    assertEquals(OutboxStatus.PENDING, sentMsg.getStatus());
+    assertNotNull(sentMsg.getAggregateId());
+    assertNotNull(sentMsg.getPayload());
 
-    OrderSuccessEvent sentEvent = eventCaptor.getValue();
+    // Deserialize payload to verify properties
+    ObjectMapper mapper = new ObjectMapper()
+        .registerModule(new com.fasterxml.jackson.datatype.jsr310.JavaTimeModule());
+    OrderSuccessEvent sentEvent = mapper.readValue(sentMsg.getPayload(), OrderSuccessEvent.class);
     assertEquals(userId, sentEvent.getUserId());
     assertEquals(0, BigDecimal.valueOf(90.00).compareTo(sentEvent.getTotalAmount()));
+    assertEquals(2, sentEvent.getTotalItemsSold());
     assertNotNull(sentEvent.getOrderId());
     assertNotNull(sentEvent.getPurchasedAt());
   }
@@ -141,6 +153,6 @@ public class OrderServiceTest {
 
     assertTrue(exception.getReason().contains("Insufficient stock"));
     verify(orderRepository).save(any(Order.class));
-    verifyNoInteractions(orderItemRepository, orderEventRepository, orderEventProducer);
+    verifyNoInteractions(orderItemRepository, outboxRepository);
   }
 }

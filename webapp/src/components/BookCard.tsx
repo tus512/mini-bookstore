@@ -112,6 +112,13 @@ export default function BookCard({ book }: BookCardProps) {
           </h3>
           <p className="text-xs text-text-muted mt-0.5 line-clamp-1">{book.author}</p>
           
+          {/* Stock Quantity */}
+          {book.stockQuantity !== undefined && book.stockQuantity !== null && (
+            <p className={`text-[10px] font-bold mt-1.5 uppercase tracking-wider ${book.stockQuantity > 0 ? 'text-emerald-600' : 'text-red-500'}`}>
+              {book.stockQuantity > 0 ? `${book.stockQuantity} in stock` : 'Out of stock'}
+            </p>
+          )}
+          
           {/* Price & Add To Cart Button */}
           <div className="mt-auto pt-3 flex items-center justify-between">
             <span className="font-serif font-black text-base text-text-dark">
@@ -119,8 +126,13 @@ export default function BookCard({ book }: BookCardProps) {
             </span>
             <button
               onClick={handleAddToCart}
-              className="p-2.5 bg-primary-light/80 hover:bg-primary text-primary hover:text-white rounded-lg transition-all duration-300 cursor-pointer shadow-2xs hover:shadow-md"
-              title="Add to Cart"
+              disabled={book.stockQuantity <= 0}
+              className={`p-2.5 rounded-lg transition-all duration-300 shadow-2xs hover:shadow-md ${
+                book.stockQuantity <= 0
+                  ? 'bg-cream-dark text-text-muted cursor-not-allowed opacity-55 shadow-none'
+                  : 'bg-primary-light/80 hover:bg-primary text-primary hover:text-white cursor-pointer'
+              }`}
+              title={book.stockQuantity <= 0 ? "Out of Stock" : "Add to Cart"}
             >
               <ShoppingCart className="w-4 h-4" />
             </button>

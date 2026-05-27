@@ -180,7 +180,7 @@ export default function HomePage() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-4">
               {[
-                {icon: <Truck className="w-5 h-5"/>, title: 'FREE SHIPPING', desc: 'On all orders over $50'},
+                {icon: <Truck className="w-5 h-5"/>, title: 'FREE SHIPPING', desc: 'On all orders today'},
                 {icon: <MapPin className="w-5 h-5"/>, title: 'BOOKSTORE', desc: 'Find your best local books'},
                 {icon: <ShieldCheck className="w-5 h-5"/>, title: 'EASY PAYMENT', desc: '100% Secure checkouts'},
                 {icon: <Headphones className="w-5 h-5"/>, title: '24/7 SUPPORT', desc: 'Dedicated helper desk'},

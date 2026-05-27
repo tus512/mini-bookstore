@@ -2,108 +2,106 @@ package com.example.mini_bookstore.module.report;
 
 import com.example.mini_bookstore.infrastructure.kafka.event.OrderSuccessEvent;
 import lombok.RequiredArgsConstructor;
-import org.springframework.kafka.annotation.KafkaListener;
+import org.apache.kafka.clients.consumer.Consumer;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.clients.consumer.ConsumerRecords;
+import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import java.math.BigDecimal;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
+
+import static com.example.mini_bookstore.config.kafka.KafkaTopicConfig.ORDER_SUCCESS_TOPIC;
 
 @Service
 @RequiredArgsConstructor
 public class ReportScheduler {
 
   private final ReportRepository reportRepository;
+  private final ConsumerFactory<String, OrderSuccessEvent> consumerFactory;
 
-  // Thread-safe buffer to hold events consumed in real-time until the next 5-minute aggregation run
-  private final Queue<OrderSuccessEvent> eventBuffer = new ConcurrentLinkedQueue<>();
+  private Consumer<String, OrderSuccessEvent> consumer;
 
-  /**
-   * Kafka Listener that consumes events in real-time from the "order-success" topic and buffers them in memory.
-   */
-  @KafkaListener(topics = "order-success", groupId = "report-group")
-  public void consumeOrderEvent(OrderSuccessEvent event) {
-    if (event != null) {
-      System.out.println("ReportScheduler: Consumed event for buffering: " + event);
-      eventBuffer.add(event);
-    }
+  @PostConstruct
+  public void init() {
+    consumer = consumerFactory.createConsumer("report-group", null);
+    consumer.subscribe(Collections.singletonList(ORDER_SUCCESS_TOPIC));
   }
 
-  /**
-   * Runs periodically every 5 minutes to aggregate the buffered sales data and save/update the daily reports in the database.
-   * "định kì 5 phút đọc dữ liệu từ kafka ra để sum số tiền cập nhật bảng report"
-   */
-  @Scheduled(fixedRate = 300000) // 5 minutes in milliseconds
+  @PreDestroy
+  public void destroy() {
+    if (consumer != null) consumer.close();
+  }
+
+  @Scheduled(fixedRate = 60000)
+//  @Scheduled(fixedRate = 300000)
   @Transactional
   public void runSalesReportAggregation() {
-    System.out.println("ReportScheduler: Starting 5-minute daily sales aggregation. Buffered event count: " + eventBuffer.size());
 
-    if (eventBuffer.isEmpty()) {
+    ConsumerRecords<String, OrderSuccessEvent> records;
+    try {
+      records = consumer.poll(Duration.ofSeconds(3));
+    } catch (org.apache.kafka.common.errors.InterruptException e) {
+      Thread.currentThread().interrupt();
       return;
     }
 
-    // Drain the current buffer into a local list to process to avoid locking the buffer during long DB operations
-    List<OrderSuccessEvent> eventsToProcess = new ArrayList<>();
-    OrderSuccessEvent event;
-    while ((event = eventBuffer.poll()) != null) {
-      eventsToProcess.add(event);
-    }
+    if (records.isEmpty()) return;
 
-    // Group events by date (LocalDate) based on their purchasedAt time
-    Map<LocalDate, List<OrderSuccessEvent>> eventsByDate = eventsToProcess.stream()
-        .collect(Collectors.groupingBy(e -> {
-          if (e.getPurchasedAt() != null) {
-            return e.getPurchasedAt().toLocalDate();
-          }
-          return LocalDate.now();
-        }));
+    Map<LocalDate, List<OrderSuccessEvent>> eventsByDate =
+            StreamSupport.stream(records.spliterator(), false)
+                    .map(ConsumerRecord::value)
+                    .collect(Collectors.groupingBy(e ->
+                            e.getPurchasedAt() != null
+                                    ? e.getPurchasedAt().toLocalDate()
+                                    : LocalDate.now()
+                    ));
 
-    // For each date, sum the amounts and upsert the daily report in the database
+
+    Map<LocalDate, Report> existedReport = reportRepository.findReportsByDates(eventsByDate.keySet())
+            .stream().collect(Collectors.toMap(Report::getReportDate, Function.identity()));
+
+    List<Report> reportsToSave = new ArrayList<>();
+
     for (Map.Entry<LocalDate, List<OrderSuccessEvent>> entry : eventsByDate.entrySet()) {
-      LocalDate reportDate = entry.getKey();
-      List<OrderSuccessEvent> dateEvents = entry.getValue();
+      LocalDate date = entry.getKey();
+      List<OrderSuccessEvent> events = entry.getValue();
 
-      BigDecimal dailyTotal = dateEvents.stream()
-          .map(e -> e.getTotalAmount() != null ? e.getTotalAmount() : BigDecimal.ZERO)
-          .reduce(BigDecimal.ZERO, BigDecimal::add);
+      BigDecimal total = events.stream().map(OrderSuccessEvent::getTotalAmount)
+              .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-      int dailyOrdersCount = dateEvents.size();
+      int totalItems = events.stream()
+              .mapToInt(e -> e.getTotalItemsSold() != null ? e.getTotalItemsSold() : 0)
+              .sum();
 
-      // Load existing report or create a new one
-      Report report = reportRepository.findByReportDate(reportDate)
-          .orElseGet(() -> Report.builder()
-              .reportDate(reportDate)
+      Report report = existedReport.getOrDefault(date, Report.builder()
+              .reportDate(date)
               .totalRevenue(BigDecimal.ZERO)
               .totalOrders(0)
               .totalItemsSold(0)
-              .periodStart(reportDate.atStartOfDay())
-              .periodEnd(reportDate.atTime(23, 59, 59))
+              .periodStart(date.atStartOfDay())
+              .periodEnd(date.atTime(23, 59, 59))
               .build());
 
-      // Accumulate the aggregated numbers
-      report.setTotalRevenue(report.getTotalRevenue().add(dailyTotal));
-      report.setTotalOrders(report.getTotalOrders() + dailyOrdersCount);
+      report.setTotalRevenue(report.getTotalRevenue().add(total));
+      report.setTotalOrders(report.getTotalOrders() + events.size());
+      report.setTotalItemsSold(report.getTotalItemsSold() + totalItems);
       report.setLastAggregatedAt(LocalDateTime.now());
 
-      reportRepository.save(report);
-      System.out.println("ReportScheduler: Updated Report for " + reportDate + ": Total Revenue = " + report.getTotalRevenue() + ", Total Orders = " + report.getTotalOrders());
+      reportsToSave.add(report);
     }
+    reportRepository.saveAll(reportsToSave);
 
-    System.out.println("ReportScheduler: Finished 5-minute sales aggregation successfully.");
-  }
-
-  /**
-   * Helper method for testing to retrieve buffer contents.
-   */
-  public Queue<OrderSuccessEvent> getEventBuffer() {
-    return eventBuffer;
+    consumer.commitSync();
   }
 }

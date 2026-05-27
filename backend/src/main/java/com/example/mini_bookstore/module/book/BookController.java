@@ -23,9 +23,11 @@ public class BookController {
       @RequestParam(required = false) String search,
       @RequestParam(required = false) UUID categoryId,
       @RequestParam(required = false) java.util.List<UUID> ids,
+      @RequestParam(required = false) java.math.BigDecimal priceMax,
+      @RequestParam(required = false) String sortBy,
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "10") int size) {
-    return ResponseEntity.ok(bookService.getBooks(search, categoryId, ids, page, size));
+    return ResponseEntity.ok(bookService.getBooks(search, categoryId, ids, priceMax, sortBy, page, size));
   }
 
   @GetMapping("/{id}")

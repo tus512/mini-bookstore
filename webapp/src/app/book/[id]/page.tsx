@@ -202,7 +202,7 @@ export default function BookDetailPage({params}: { params: Promise<{ id: string 
             {/* Trust badges */}
             <div className="grid grid-cols-3 gap-2 pt-4 text-[10px] text-text-muted border-t border-border-warm/60">
               {[
-                {icon: <Truck className="w-4 h-4 text-primary shrink-0"/>, label: 'Free shipping over $50'},
+                {icon: <Truck className="w-4 h-4 text-primary shrink-0"/>, label: 'Free shipping on all orders'},
                 {icon: <RotateCcw className="w-4 h-4 text-primary shrink-0"/>, label: 'Easy 30-day returns'},
                 {icon: <ShieldCheck className="w-4 h-4 text-primary shrink-0"/>, label: '100% Secure Checkout'},
               ].map((item, i) => (

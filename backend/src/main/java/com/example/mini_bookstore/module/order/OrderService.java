@@ -28,18 +28,21 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import com.example.mini_bookstore.infrastructure.kafka.producer.OrderEventProducer;
 import com.example.mini_bookstore.infrastructure.kafka.event.OrderSuccessEvent;
+import com.example.mini_bookstore.module.outbox.OutboxMessage;
+import com.example.mini_bookstore.module.outbox.OutboxRepository;
+import com.example.mini_bookstore.module.outbox.OutboxStatus;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Service
 @RequiredArgsConstructor
 public class OrderService {
   private final OrderRepository orderRepository;
   private final OrderItemRepository orderItemRepository;
-  private final OrderEventRepository orderEventRepository;
+  private final OutboxRepository outboxRepository;
   private final UserRepository userRepository;
   private final BookRepository bookRepository;
-  private final OrderEventProducer orderEventProducer;
+  private final ObjectMapper objectMapper;
 
   /**
    * Creates a new order atomically and safely.
@@ -73,9 +76,13 @@ public class OrderService {
       }
     }
 
-    List<Book> resolvedBooks = request.getItems().stream()
-        .map(itemDto -> bookMap.get(itemDto.getBookId()))
-        .collect(Collectors.toList());
+    BigDecimal totalAmount = BigDecimal.ZERO;
+
+    for (OrderItemRequestDto itemDto : request.getItems()) {
+      Book book = bookMap.get(itemDto.getBookId());
+      BigDecimal subtotal = book.getPrice().multiply(BigDecimal.valueOf(itemDto.getQuantity()));
+      totalAmount = totalAmount.add(subtotal);
+    }
 
     // --- Phase 2: create the order shell ---
     Order order = Order.builder()
@@ -83,17 +90,15 @@ public class OrderService {
         .shippingAddress(request.getShippingAddress())
         .paymentMethod(request.getPaymentMethod() != null ? request.getPaymentMethod() : "CARD")
         .status(0) // pending
-        .totalAmount(BigDecimal.ZERO)
+        .totalAmount(totalAmount)
         .build();
     order = orderRepository.save(order);
 
     // --- Phase 3: atomically decrement stock for each item ---
-    BigDecimal totalAmount = BigDecimal.ZERO;
     List<OrderItem> savedItems = new ArrayList<>();
 
-    for (int i = 0; i < request.getItems().size(); i++) {
-      OrderItemRequestDto itemDto = request.getItems().get(i);
-      Book book = resolvedBooks.get(i);
+    for (OrderItemRequestDto itemDto : request.getItems()) {
+      Book book = bookMap.get(itemDto.getBookId());
 
       int rowsUpdated = bookRepository.decrementStockIfAvailable(book.getId(), itemDto.getQuantity());
       if (rowsUpdated == 0) {
@@ -103,7 +108,6 @@ public class OrderService {
       }
 
       BigDecimal subtotal = book.getPrice().multiply(BigDecimal.valueOf(itemDto.getQuantity()));
-      totalAmount = totalAmount.add(subtotal);
 
       OrderItem orderItem = OrderItem.builder()
           .order(order)
@@ -112,32 +116,39 @@ public class OrderService {
           .unitPrice(book.getPrice())
           .subtotal(subtotal)
           .build();
-      savedItems.add(orderItemRepository.save(orderItem));
+      savedItems.add(orderItem);
     }
+    savedItems = orderItemRepository.saveAll(savedItems);
 
-    // --- Phase 4: finalise order total and record audit event ---
-    order.setTotalAmount(totalAmount);
-    order = orderRepository.save(order);
-
-    OrderEvent orderEvent = OrderEvent.builder()
-        .order(order)
-        .eventType("ORDER_PLACED")
-        .payload("{\"message\":\"Order placed successfully\",\"totalAmount\":" + totalAmount + "}")
-        .processed(1)
-        .eventTime(LocalDateTime.now())
-        .build();
-    orderEventRepository.save(orderEvent);
-
+    // --- Phase 4: record outbox message in the same transaction ---
     try {
+      int totalItemsSold = request.getItems().stream()
+          .mapToInt(OrderItemRequestDto::getQuantity)
+          .sum();
+
       OrderSuccessEvent successEvent = OrderSuccessEvent.builder()
           .orderId(order.getId())
           .userId(userId)
           .totalAmount(totalAmount)
+          .totalItemsSold(totalItemsSold)
           .purchasedAt(order.getCreatedAt() != null ? order.getCreatedAt() : LocalDateTime.now())
           .build();
-      orderEventProducer.sendOrderSuccessMessage(successEvent);
+
+      String payloadJson = objectMapper.writeValueAsString(successEvent);
+
+      OutboxMessage outboxMessage = OutboxMessage.builder()
+          .aggregateType("ORDER")
+          .aggregateId(order.getId())
+          .eventType("ORDER_PLACED")
+          .topic("order-success")
+          .payload(payloadJson)
+          .status(OutboxStatus.PENDING)
+          .retryCount(0)
+          .build();
+
+      outboxRepository.save(outboxMessage);
     } catch (Exception ex) {
-      System.err.println("Warning: Failed to publish OrderSuccessEvent to Kafka: " + ex.getMessage());
+      throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to serialize outbox message", ex);
     }
 
     return mapToResponseDto(order, savedItems);

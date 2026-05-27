@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import javax.persistence.LockModeType;
@@ -14,22 +15,21 @@ import java.util.UUID;
 
 @Repository
 public interface BookRepository extends JpaRepository<Book, UUID> {
-    Page<Book> findByDeletedAtIsNull(Pageable pageable);
 
     @Query("SELECT b FROM Book b WHERE b.deletedAt IS NULL AND " +
-           "(LOWER(b.title) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           "(:priceMax IS NULL OR b.price <= :priceMax) AND " +
+           "(:categoryId IS NULL OR b.category.id = :categoryId) AND " +
+           "(:search IS NULL OR " +
+           "LOWER(b.title) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
            "LOWER(b.author) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
            "LOWER(b.isbn) LIKE LOWER(CONCAT('%', :search, '%')))")
-    Page<Book> searchBooks(String search, Pageable pageable);
+    Page<Book> searchBooksWithFilters(
+        @Param("search") String search, 
+        @Param("categoryId") UUID categoryId, 
+        @Param("priceMax") java.math.BigDecimal priceMax, 
+        Pageable pageable);
 
-    @Query("SELECT b FROM Book b WHERE b.deletedAt IS NULL AND b.category.id = :categoryId")
-    Page<Book> findByCategoryIdAndDeletedAtIsNull(UUID categoryId, Pageable pageable);
 
-    @Query("SELECT b FROM Book b WHERE b.deletedAt IS NULL AND b.category.id = :categoryId AND " +
-           "(LOWER(b.title) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
-           "LOWER(b.author) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
-           "LOWER(b.isbn) LIKE LOWER(CONCAT('%', :search, '%')))")
-    Page<Book> searchBooksInCategory(String search, UUID categoryId, Pageable pageable);
 
     /**
      * Acquire a pessimistic write lock on a book row before reading it.

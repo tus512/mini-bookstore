@@ -47,13 +47,15 @@ function ExploreContent() {
         params: {
           search: searchQuery.trim() || undefined,
           categoryId: selectedCategoryId || undefined,
+          priceMax: priceMax || undefined,
+          sortBy: sortBy || undefined,
           page: currentPage,
           size: PAGE_SIZE,
         }
       });
     }, 200);
     return () => clearTimeout(delay);
-  }, [searchQuery, selectedCategoryId, currentPage, isWishlistMode]);
+  }, [searchQuery, selectedCategoryId, priceMax, sortBy, currentPage, isWishlistMode]);
 
   const books = booksPage?.content || [];
   const totalPages = booksPage?.totalPages || 1;

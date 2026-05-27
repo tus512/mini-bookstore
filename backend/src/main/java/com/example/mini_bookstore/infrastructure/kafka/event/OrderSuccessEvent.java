@@ -17,5 +17,6 @@ public class OrderSuccessEvent {
   private UUID orderId;
   private UUID userId;
   private BigDecimal totalAmount;
+  private Integer totalItemsSold;
   private LocalDateTime purchasedAt;
 }
